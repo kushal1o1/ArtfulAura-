@@ -1,0 +1,21 @@
+**/.env
+# Python compiled files
+*.pyc
+*.pyo
+*.pyd
+AA+_BACKEND/AA/__pycache__/
+*.so
+AA+_BACKEND/venv/
+# Django stuff
+*.log
+*.pot
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+AA+_BACKEND/db.sqlite3
+AA+_BACKEND/staticfiles/
+AA+_BACKEND/media/
+# IDE-specific
+.vscode/
+.idea/
