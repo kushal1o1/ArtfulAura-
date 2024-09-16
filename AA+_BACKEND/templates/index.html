@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Vendor E-commerce Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    {% load static%}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="{% static 'js/scripts.js' %}" defer></script>
+</head>
+
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>WebStore</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Shop</a></li>
+                    <li><a href="#">Vendors</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Cart</a></li>
+                </ul>
+            </nav>
+            <div class="auth-links">
+                <a href="#">Login</a> | <a href="#">Register</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h2>Your one-stop shop for everything</h2>
+            <p>Explore from a wide range of products</p>
+            <a href="#" class="cta-btn">Shop Now</a>
+        </div>
+    </section>
+
+    <!-- Product Listings Section -->
+    <section class="products">
+        <div class="container">
+            <h2>Featured Products</h2>
+            <div class="product-grid">
+                <!-- Product 1 -->
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/300" alt="Product 1">
+                    <h3>Product 1</h3>
+                    <p>$19.99</p>
+                    <button class="add-to-cart" data-id="1">Add to Cart</button>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/300" alt="Product 2">
+                    <h3>Product 2</h3>
+                    <p>$29.99</p>
+                    <button class="add-to-cart" data-id="2">Add to Cart</button>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/300" alt="Product 3">
+                    <h3>Product 3</h3>
+                    <p>$39.99</p>
+                    <button class="add-to-cart" data-id="3">Add to Cart</button>
+                </div>
+
+                <!-- Product 4 -->
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/300" alt="Product 4">
+                    <h3>Product 4</h3>
+                    <p>$49.99</p>
+                    <button class="add-to-cart" data-id="4">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebStore. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

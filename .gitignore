@@ -6,6 +6,7 @@
 AA+_BACKEND/AA/__pycache__/
 *.so
 AA+_BACKEND/venv/
+AA+MERGE/venv/
 # Django stuff
 *.log
 *.pot
