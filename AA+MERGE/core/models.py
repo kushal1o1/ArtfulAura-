@@ -29,10 +29,14 @@ class Item(models.Model):
     slug = models.SlugField()
     description = models.TextField()
     image = models.ImageField()
+    Additional_information=models.CharField(max_length=100,null=True,blank=True)
 
     def __str__(self):
         return self.title
-
+    def get_absolute_url(self):
+        return reverse("core:product", kwargs={
+            'slug': self.slug
+        })
 
 
 class OrderItem(models.Model):

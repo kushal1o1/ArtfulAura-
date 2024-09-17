@@ -61,20 +61,19 @@
             <div class="card">
 
               <div class="view overlay">
-                <img src="https://mdbootstrap.com/img/Photos/Horizontal/E-commerce/Vertical/12.jpg" class="card-img-top" >
                 <img src="{{ item.image.url }}" class="card-img-top " style="height:300px;" >
-                <a href="">
+                <a href="{{ item.get_absolute_url }}">
                   <div class="mask rgba-white-slight"></div>
                 </a>
               </div>
 
               <div class="card-body text-center">
-                <a href="" class="grey-text">
+                <a href="{{ item.get_absolute_url }}" class="grey-text">
                   <h5>{{ item.get_category_display }}</h5>
                 </a>
                 <h5>
                   <strong>
-                    <a href="" class="dark-grey-text">{{ item.title }}
+                    <a href="{{ item.get_absolute_url }}" class="dark-grey-text">{{ item.title }}
                       <span class="badge badge-pill {{ item.get_label_display }}-color">NEW</span>
                     </a>
                   </strong>

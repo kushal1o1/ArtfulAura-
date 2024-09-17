@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  <main class="mt-5 pt-4">
+    <div class="container dark-grey-text mt-5">
+
+      <!--Grid row-->
+      <div class="row wow fadeIn">
+
+        <!--Grid column-->
+        <div class="col-md-6 mb-4">
+
+          <img src="{{ object.image.url }}" class="img-fluid" style="height:500px;" alt="">
+
+        </div>
+        <!--Grid column-->
+
+        <!--Grid column-->
+        <div class="col-md-6 mb-4">
+
+          <!--Content-->
+          <div class="p-4">
+            <h3 class="fw-bold mb-3">{{object.title}}</h3>
+            <div class="mb-3">
+              <a href="">
+                <span class="badge purple mr-1">{{ object.get_category_display }}</span>
+              </a>
+            </div>
+            <div class="rating mb-3">
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="far fa-star text-warning"></i>
+                        <span>(34 Reviews)</span>
+                    </div>
+
+            <p class="lead">
+              {% if object.discount_price %}
+              <span class="mr-1">
+                <del>${{ object.price }}</del>
+              </span>
+              <span>${{ object.discount_price }}</span>
+              {% else %}
+              <span>${{ object.price }}</span>
+              {% endif %}
+            </p>
+
+            <p class="lead font-weight-bold">Description</p>
+
+            <p>{{ object.description }}</p>
+
+            <a href="{{ object.get_add_to_cart_url }}" class="btn btn-primary btn-md my-0 p">
+              Add to cart
+              <i class="fas fa-shopping-cart ml-1"></i>
+            </a>
+            <a href="{{ object.get_remove_from_cart_url }}" class="btn btn-danger btn-md my-0 p">
+              Remove from cart
+            </a>
+
+          </div>
+          <!--Content-->
+
+        </div>
+        <!--Grid column-->
+
+      </div>
+      <!--Grid row-->
+
+      <hr>
+
+      <!--Grid row-->
+      <div class="row d-flex justify-content-center wow fadeIn">
+
+        <!--Grid column-->
+        <div class="col-md-6 text-center">
+
+          <h4 class="my-4 h4">Additional information</h4>
+
+          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus suscipit modi sapiente illo soluta odit
+            voluptates,
+            quibusdam officia. Neque quibusdam quas a quis porro? Molestias illo neque eum in laborum.</p>
+
+        </div>
+        <!--Grid column-->
+
+      </div>
+      <!--Grid row-->
+
+      <!--Grid row-->
+     
+    </div>
+  </main>
+  <hr>
+  <div class="container">
+    <div class="col-lg-8 container">
+        <h4 class="fw-bold">Leave a Review</h4>
+        <form id="reviewForm">
+            <div class="mb-3">
+                <label for="reviewText" class="form-label">Your Review</label>
+                <textarea class="form-control" id="reviewText" rows="4" placeholder="Write your review" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="reviewRating" class="form-label">Rating</label>
+                <select class="form-select" id="reviewRating" required>
+                    <option value="5">5 Stars</option>
+                    <option value="4">4 Stars</option>
+                    <option value="3">3 Stars</option>
+                    <option value="2">2 Stars</option>
+                    <option value="1">1 Star</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+        </form>
+    </div>
+</div>
+
+<!-- Display Reviews Section -->
+ <div class="container">
+    <div class="col-lg-8 container">
+        <h4 class="fw-bold">Customer Reviews</h4>
+        <div id="reviewsList">
+            <!-- Reviews will be dynamically inserted here -->
+        </div>
+    </div>
+</div>
+</section>
+<!-- End Product Section -->
+
+<!-- MDBootstrap JS -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
+<script>
+// JavaScript to handle review submission and dynamic updates
+const reviewForm = document.getElementById('reviewForm');
+const reviewsList = document.getElementById('reviewsList');
+
+reviewForm.addEventListener('submit', function (e) {
+e.preventDefault();
+
+// Get form values
+const review = document.getElementById('reviewText').value;
+const rating = document.getElementById('reviewRating').value;
+
+// Create a new review card
+const reviewCard = document.createElement('div');
+reviewCard.classList.add('d-flex', 'mb-3');
+
+const avatar = `<div class="me-3"><img src="https://via.placeholder.com/50x50" class="rounded-circle" alt="Reviewer"></div>`;
+const reviewContent = `
+    <div>
+        <h6 class="mb-1">Kushal</h6>
+        <p class="small review-text mb-0">"${review}"</p>
+        <p class="text-warning">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</p>
+    </div>
+`;
+
+reviewCard.innerHTML = avatar + reviewContent;
+
+// Append the new review to the reviews list
+reviewsList.appendChild(reviewCard);
+
+// Clear the form
+reviewForm.reset();
+});
+</script>
+
+{% endblock content %}
