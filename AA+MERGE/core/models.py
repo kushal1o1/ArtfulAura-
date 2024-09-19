@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 from django.shortcuts import reverse
+from django_countries.fields import CountryField
+
 
 CATEGORY_CHOICES = (
     ('P', 'Painting'),
@@ -19,6 +21,11 @@ LABEL_CHOICES = (
     ('S', 'secondary'),
     ('D', 'danger')
 )
+
+ADDRESS_CHOICES = (
+    ('S', 'Shipping'),
+)
+
 # Create your models here.
 class Item(models.Model):
     title = models.CharField(max_length=100)
@@ -75,11 +82,63 @@ class Order(models.Model):
     items = models.ManyToManyField(OrderItem)
     start_date = models.DateTimeField(auto_now_add=True)
     ordered_date = models.DateTimeField()
+    coupon = models.ForeignKey(
+        'Coupon', on_delete=models.SET_NULL, blank=True, null=True)
+    shipping_address = models.ForeignKey(
+        'Address', related_name='shipping_address', on_delete=models.SET_NULL, blank=True, null=True)
+    payment = models.ForeignKey(
+        'Payment', on_delete=models.SET_NULL, blank=True, null=True)
+    being_delivered = models.BooleanField(default=False)
+    received = models.BooleanField(default=False)
+    refund_requested = models.BooleanField(default=False)
+    refund_granted = models.BooleanField(default=False)
+    
     def __str__(self):
         return self.user.username
 
-    def get_total(self):
-        total = 0
+    def get_actual_total(self):
+        total=0
         for order_item in self.items.all():
             total += order_item.get_final_price()
         return total
+        
+    def get_total(self):
+        total= self.get_actual_total()
+        if  self.coupon:
+            discount_per=self.coupon.percentage
+            total = total - ((discount_per * total)/100)
+        return total
+    def get_coupon_amount(self):
+        return self.get_actual_total()-self.get_total()
+    
+    
+    
+class Address(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    street_address = models.CharField(max_length=100)
+    apartment_address = models.CharField(max_length=100)
+    country = CountryField(multiple=False)
+    zip = models.CharField(max_length=100)
+    address_type = models.CharField(max_length=1, choices=ADDRESS_CHOICES)
+    default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user.username
+
+    class Meta:
+        verbose_name_plural = 'Addresses'
+      
+      
+
+class Payment(models.Model):
+    pass
+
+        
+class Coupon(models.Model):
+    code = models.CharField(max_length=15)
+    percentage = models.FloatField()
+
+
+    def __str__(self):
+        return self.code

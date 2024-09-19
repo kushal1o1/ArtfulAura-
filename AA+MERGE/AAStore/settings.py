@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
 
     'core',
-    
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -163,3 +163,5 @@ DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
     'SHOW_TOOLBAR_CALLBACK': show_toolbar
 }
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
