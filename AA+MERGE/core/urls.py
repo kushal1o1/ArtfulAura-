@@ -11,7 +11,7 @@ from .views import(
     OrderSummaryView,
     CheckoutView,
     AddCouponView,
-    # PaymentView,
+    PaymentView,
 )
 
 app_name='core'
@@ -27,9 +27,11 @@ urlpatterns = [
     path('order-summary/', OrderSummaryView.as_view(), name='order-summary'),
     path('checkout/', CheckoutView.as_view(), name='checkout'),
     path('add-coupon/', AddCouponView.as_view(), name='add-coupon'),
-    # path('payment/<payment_option>/', PaymentView.as_view(), name='payment'),
+    path('payment/<payment_option>/', PaymentView.as_view(), name='payment'),
     path('initiate/',views.initkhalti,name="initiate"),
-    path('verify',views.verifyKhalti,name="verify")
+    path('verify-khalti',views.verifyKhalti,name="verify-khalti"),
+    path('verify-esewa',views.verifyKhalti,name="verify-esewa")
+    
 
     
     

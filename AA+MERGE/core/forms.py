@@ -5,7 +5,7 @@ from django_countries.widgets import CountrySelectWidget
 
 PAYMENT_CHOICES = (
     ('E', 'Esewa'),
-    ('K', 'Kalti')
+    ('K', 'Khalti')
 )
 
 class CheckoutForm(forms.Form):

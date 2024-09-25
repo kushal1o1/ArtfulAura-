@@ -141,20 +141,7 @@ def is_valid_form(values):
 
 
 
-def genSha256(key, message):
-    # Convert the key and message to bytes
-    key = key.encode('utf-8')
-    message = message.encode('utf-8')
 
-    # Generate HMAC SHA256 digest
-    hmac_sha256 = hmac.new(key, message, hashlib.sha256)
-    digest = hmac_sha256.digest()
-
-    # Convert digest to Base64-encoded string
-    signature = base64.b64encode(digest).decode('utf-8')
-    return signature
-
-uid = str(uuid.uuid4())
 
 class CheckoutView(View):
     def get(self, *args, **kwargs):
@@ -162,19 +149,14 @@ class CheckoutView(View):
             order = Order.objects.get(user=self.request.user, ordered=False)
             form = CheckoutForm()
 
-            # Ensure the message format matches what the server expects
-            message = "total_amount=100&transaction_uuid={{uid}}&product_code=EPAYTEST"
 
-            # Generate the signature
-            signature = genSha256("8gBm/:&EnhH.1/q", message)
 
             context = {
                 'form': form,
                 'couponform': CouponForm(),
                 'order': order,
                 'DISPLAY_COUPON_FORM': True,
-                'uuid': uid,
-                "signature": signature,
+
             }
             shipping_address_qs = Address.objects.filter(
                 user=self.request.user,
@@ -318,36 +300,69 @@ class AddCouponView(View):
             return redirect("core:checkout")
 
 
+def generate_signature(message, secret):
+    """
+    Generate HMAC SHA-256 signature in Base64 format.
+
+    :param message: The message to be signed (string).
+    :param secret: The secret key (string).
+    :return: Base64 encoded signature (string).
+    """
+    # Convert message and secret to bytes
+    message_bytes = message.encode('utf-8')
+    secret_bytes = secret.encode('utf-8')
+
+    # Create HMAC object using SHA-256
+    hmac_obj = hmac.new(secret_bytes, message_bytes, hashlib.sha256)
+
+    # Generate the HMAC signature (raw bytes)
+    signature = hmac_obj.digest()
+
+    # Encode the signature into Base64
+    base64_signature = base64.b64encode(signature).decode('utf-8')
+
+    return base64_signature
+
+
+
+def generate_transaction_uuid():
+    # Generate a random UUID
+    full_uuid = uuid.uuid4()
+    
+    # Split the UUID into segments: first 2 digits, next 3 digits, and last 2 digits
+    part1 = str(full_uuid).replace('-', '')[:2]  # First 2 digits
+    part2 = str(full_uuid).replace('-', '')[2:5]  # Next 3 digits
+    part3 = str(full_uuid).replace('-', '')[5:7]  # Last 2 digits
+    
+    # Format as '11-201-13' like pattern
+    transaction_uuid = f"{part1}-{part2}-{part3}"
+
+    return transaction_uuid
+
 class PaymentView(View):
     def get(self, *args, **kwargs):
-            url = "https://a.khalti.com/api/v2/epayment/initiate/"
-            return_url = self.request.POST.get('return_url')
-            website_url = self.request.POST.get('return_url')
-            amount = self.request.POST.get('amount')
-            purchase_order_id = self.request.POST.get('purchase_order_id')
-            payload = json.dumps({
-                "return_url": return_url,
-                "website_url": website_url,
-                "amount": amount,
-                "purchase_order_id": purchase_order_id,
-                "purchase_order_name": "test",
-                "customer_info": {
-                "name": "John Doe",
-                "email": "test@khalti.com",
-                "phone": "9800000001"
-                }
-            })
+        order = Order.objects.get(user=self.request.user, ordered=False)
+        
+        if kwargs['payment_option'] == 'esewa':
+            uuid=generate_transaction_uuid()
+            # Ensure the message format matches what the server expects
+            message = f"total_amount={order.get_total},transaction_uuid={uuid},product_code=EPAYTEST"
 
-            # put your own live secet for admin
-            headers = {
-                'Authorization': f'key {config("KHALTI_API_KEY")}',
-                'Content-Type': 'application/json',
-            }
-
-            response = requests.request("POST", url, headers=headers, data=payload)
-
-            new_res = json.loads(response.text)
-            return redirect(new_res['payment_url'])
+            # Generate the signature
+            # signature = genSha256("8gBm/:&EnhH.1/q", message)
+            signature = generate_signature(config('ESEWA_SECRET_KEY'), message)
+            return render(self.request, "payment.html",context={
+                'order':order,
+                "method":"esewa",
+                'uuid': uuid,
+                "signature": signature,})
+            
+        elif kwargs['payment_option'] == 'kalti':
+            return render(self.request, "payment.html",context={'order':order,"method":"khalti"})
+            
+        else:
+            messages.warning(self.request, "Invalid payment option selected")
+            return redirect("core:checkout")
 
 def initkhalti(request):
     url = "https://a.khalti.com/api/v2/epayment/initiate/"
@@ -384,40 +399,38 @@ def create_ref_code():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
 
 def verifyKhalti(request):
-    url = "https://a.khalti.com/api/v2/epayment/lookup/"
-    if request.method == 'GET':
-        headers = {
-            'Authorization': f'key {config("KHALTI_API_KEY")}',
-            'Content-Type': 'application/json',
-        }
-        pidx = request.GET.get('pidx')
-        data = json.dumps({
-            'pidx':pidx
-        })
-        res = requests.request('POST',url,headers=headers,data=data)
-        new_res = json.loads(res.text)
-        if new_res['status'] == 'Completed':
-            order = Order.objects.get(user=request.user, ordered=False)
-            payment = Payment()
-            payment.pidx = pidx
-            payment.user = request.user
-            payment.amount = int(order.get_total())
-            payment.save()
-            order_items = order.items.all()
-            order_items.update(ordered=True)
-            for item in order_items:
-                    item.save()
-            order.ordered = True
-            order.payment = payment 
-            order.ref_code = create_ref_code()
-            messages.success(request, "Your order was successful!")
-            return redirect("/")
-        else:
-            messages.warning(request, "Payment not completed")
-            return redirect("core:checkout")
-        
-        # else:
-        #     # give user a proper error message
-        #     raise BadRequest("sorry ")
+    pass
+    # url = "https://a.khalti.com/api/v2/epayment/lookup/"
+    # if request.method == 'GET':
+    #     headers = {
+    #         'Authorization': f'key {config("KHALTI_API_KEY")}',
+    #         'Content-Type': 'application/json',
+    #     }
+    #     pidx = request.GET.get('pidx')
+    #     data = json.dumps({
+    #         'pidx':pidx
+    #     })
+    #     res = requests.request('POST',url,headers=headers,data=data)
+    #     new_res = json.loads(res.text)
+    #     if new_res['status'] == 'Completed':
+    #         order = Order.objects.get(user=request.user, ordered=False)
+    #         payment = Payment()
+    #         payment.pidx = pidx
+    #         payment.user = request.user
+    #         payment.amount = int(order.get_total())
+    #         payment.save()
+    #         order_items = order.items.all()
+    #         order_items.update(ordered=True)
+    #         for item in order_items:
+    #                 item.save()
+    #         order.ordered = True
+    #         order.payment = payment 
+    #         order.ref_code = create_ref_code()
+    #         messages.success(request, "Your order was successful!")
+    #         return redirect("/")
+    #     else:
+    #         messages.warning(request, "Payment not completed")
+    #         return redirect("core:checkout")
 
-        return redirect('/')
+def verifyEsewa(request):
+    pass
