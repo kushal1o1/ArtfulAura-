@@ -296,6 +296,7 @@ def get_coupon(request, code):
         return redirect("core:checkout")
 
 class AddCouponView(View):
+    print("Im at AddCouponView")
     def post(self, *args, **kwargs):
         form = CouponForm(self.request.POST or None)
         if form.is_valid():

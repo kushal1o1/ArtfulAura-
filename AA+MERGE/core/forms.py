@@ -9,12 +9,12 @@ PAYMENT_CHOICES = (
 )
 
 class CheckoutForm(forms.Form):
-    address = forms.CharField(required=True,widget=forms.TextInput(attrs={
+    address = forms.CharField(required=False,widget=forms.TextInput(attrs={
                 'placeholder': '1234 Main St',
                 'id': 'address',
                 'class': 'form-control',
             }))
-    street_address = forms.CharField(required=True,widget=forms.TextInput(attrs={
+    street_address = forms.CharField(required=False,widget=forms.TextInput(attrs={
                 'placeholder': 'Apartment or suite',
                 'id': 'address2',
                 'class': 'form-control',
@@ -24,12 +24,12 @@ class CheckoutForm(forms.Form):
         widget=CountrySelectWidget(attrs={
             'class': 'custom-select d-block w-100',
         }))
-    zip = forms.CharField(required=True,widget=forms.TextInput(attrs={
+    zip = forms.CharField(required=False,widget=forms.TextInput(attrs={
                 'placeholder': 'Zip code',
                 'id': 'shipping_zip',
                 'class': 'form-control',
             }))
-    phone_number = forms.IntegerField(required=True,widget=forms.NumberInput(attrs={
+    phone_number = forms.IntegerField(required=False,widget=forms.NumberInput(attrs={
                 'placeholder': '98********',
                 'id': 'phone_number',
                 'class': 'form-control',
