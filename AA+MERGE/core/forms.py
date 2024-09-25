@@ -9,18 +9,39 @@ PAYMENT_CHOICES = (
 )
 
 class CheckoutForm(forms.Form):
-    shipping_address = forms.CharField(required=False)
-    shipping_address2 = forms.CharField(required=False)
-    shipping_country = CountryField(blank_label='(select country)').formfield(
+    address = forms.CharField(required=True,widget=forms.TextInput(attrs={
+                'placeholder': '1234 Main St',
+                'id': 'address',
+                'class': 'form-control',
+            }))
+    street_address = forms.CharField(required=True,widget=forms.TextInput(attrs={
+                'placeholder': 'Apartment or suite',
+                'id': 'address2',
+                'class': 'form-control',
+            }))
+    country = CountryField(blank_label='(select country)').formfield(
         required=False,
         widget=CountrySelectWidget(attrs={
             'class': 'custom-select d-block w-100',
         }))
-    shipping_zip = forms.CharField(required=False)
+    zip = forms.CharField(required=True,widget=forms.TextInput(attrs={
+                'placeholder': 'Zip code',
+                'id': 'shipping_zip',
+                'class': 'form-control',
+            }))
+    phone_number = forms.IntegerField(required=True,widget=forms.NumberInput(attrs={
+                'placeholder': '98********',
+                'id': 'phone_number',
+                'class': 'form-control',
+            }))
+    
 
     
 
-    set_default_shipping = forms.BooleanField(required=False)
+    set_default_shipping = forms.BooleanField(required=False,widget=forms.CheckboxInput(attrs={
+                'class': 'custom-control-input',
+                'id': 'set_default_shipping',
+            }))
     use_default_shipping = forms.BooleanField(required=False)
 
     payment_option = forms.ChoiceField(
@@ -33,4 +54,4 @@ class CouponForm(forms.Form):
         'placeholder': 'Promo code',
         'aria-label': 'Recipient\'s username',
         'aria-describedby': 'basic-addon2'
-    }))
+    }),required=False)

@@ -10,55 +10,45 @@
         <div class="col-md-8 mb-4">
           <div class="card">
             
-             <form  method="POST" class="card-body"> 
+
+ {% comment %} TO DO :Esewa Integration {% endcomment %}
+            {% comment %} <form action="https://rc-epay.esewa.com.np/api/epay/main/v2/form" method="POST" class="card-body"> 
               
-  {% csrf_token %}
+              {% comment %} {% csrf_token %}
 
               <h3>Shipping address</h3>
 
               <div class='hideable_shipping_form'>
 
                 <div class="md-form mb-5">
-                  {{form.address}}
+                  <input type='text' placeholder='1234 Main St' id='address' name='address' class='form-control' />
                   <label for="address" class="">Address</label>
                 </div>
 
                 <div class="md-form mb-5">
-                 
-                  {{form.street_address}}
-
-                  <label for="address2" class="street_address">Street Address </label>
+                  <input type='text' placeholder='Apartment or suite' id='address2' name='address2' class='form-control' />
+                  <label for="address2" class="">Specific Address  (optional)</label>
                 </div>
 
                 <div class="row">
                   <div class="col-lg-4 col-md-12 mb-4">
                     <label for="country">Country</label>
-                    {{ form.country }}
+                    {{ form.shipping_country }}
                     <div class="invalid-feedback">
                       Please select a valid country.
                     </div>
                   </div>
                   <div class="col-lg-4 col-md-6 mb-4">
                     <label for="shipping_zip">Zip</label>
-                   
-                    {{form.zip}}
+                    <input type='text' placeholder='Zip code' id='shipping_zip' name='shipping_zip' class='form-control' />
                     <div class="invalid-feedback">
                       Zip code required.
-                    </div>
-                  </div>
-
-                  <div class="col-lg-4 col-md-6 mb-4">
-                    <label for="phone_number">Phone Number</label>
-                   
-                    {{form.phone_number}}
-                    <div class="invalid-feedback">
-                      phone is required.
                     </div>
                   </div>
                 </div>
 
                 <div class="custom-control custom-checkbox">
-                  {{form.set_default_shipping}}
+                  <input type="checkbox" class="custom-control-input" name="set_default_shipping" id="set_default_shipping">
                   <label class="custom-control-label" for="set_default_shipping">Save as default shipping address</label>
                 </div>
 
@@ -72,12 +62,6 @@
               {% endif %}
 
               <hr>
-              {% if default_shipping_address %}
-              <div class="custom-control custom-checkbox">
-                <input type="checkbox" class="custom-control-input" name="use_default_shipping" id="use_default_shipping">
-                <label class="custom-control-label" for="use_default_shipping">Use default shipping address: {{ default_shipping_address.street_address|truncatechars:10 }}</label>
-              </div>
-              {% endif %}
 
 
               <h3>Payment option</h3>
@@ -90,8 +74,17 @@
                 </div>
                 {% endfor %}
               </div>
-              <button class="btn btn-primary btn-lg btn-block" type="submit">Continue to checkout</button>
-
+{% endcomment %}
+    {% comment %} Khalti INtegration {% endcomment %}
+              <hr class="mb-4"> 
+              <form action="{% url 'core:initiate' %}" method="POST">
+                {% csrf_token  %}
+                <input type="text" name="purchase_order_id" value="{{uuid}}"  id="pid">
+                <input type="text" name="amount" value="1000" id="amt">
+                <input type="text" value="Pay With Khalti" name="" id="">
+                <input type="text" name="return_url" value="http://127.0.0.1:8000/verify">
+                <button class="btn btn-primary btn-lg btn-block" type="submit">Continue to checkout</button>
+            </form>
             
           </div>
 
