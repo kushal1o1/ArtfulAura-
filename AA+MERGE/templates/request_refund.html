@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <main>
+
+      <div class="container-fluid">
+        <h1 class="my-5 h2 text-center">Your Previous Orders</div>
+        <div class="table-responsive text-nowrap col-md-8  container ">
+          {% for object in orders %}
+          <h1 class="text-center mb-4 h3 ">Order {{ forloop.counter}}</h1>
+          <table class="table  container-fluid">
+              <tbody class="card-body">
+              {% for order_item in object.items.all %}
+              <tr>
+                  <td><img src="{{ order_item.item.image.url }}" class="card-img-top" style="height:50px;width:50px"></td>
+                  <td>{{ order_item.item.title }}</td>
+                  <td>{{ order_item.item.price }}</td>
+                  <td>
+                    
+                      {{ order_item.quantity }}
+                  </td>
+                  <td>
+                  {% if order_item.item.discount_price %}
+                      ${{ order_item.get_total_discount_item_price }}
+                      <span class="badge badge-primary">Saved ${{ order_item.get_amount_saved }}</span>
+                  {% else %}
+                      ${{ order_item.get_total_item_price }}
+                  {% endif %}
+                
+                  </td>
+              </tr>
+              {% empty %}
+              <tr>
+                  <td colspan='5'>Your cart was empty</td>
+              </tr>
+              {% endfor %}
+            {% if object.coupon %}
+              <tr>
+                  <td colspan="4"><b>Coupon</b></td>
+                  <td>
+                      <b>{{ object.coupon.percentage }}% OFF {{object.get_actual_total}}</b>
+                  </td>
+              </tr>
+              <tr>
+                  <td colspan="4">Coupon Amount</td>
+                  <td >-${{object.get_coupon_amount}}</td>
+              </tr>
+      
+              {% endif %} 
+              {% if object.get_total %}
+              <tr>
+                  <td colspan="4"><b>Order Total</b></td>
+                  <td><b>${{ object.get_total }}</b></td>
+              </tr>
+              {% endif %}
+              {% if object.ref_code %}
+              <tr>
+                  <td colspan="4"><b>Reference Code</b></td>
+                  <td><b>{{ object.ref_code }}</b></td>
+              </tr>
+              {% endif %}
+
+              </tbody>
+          </table>
+          <br>
+          <br>
+          {% endfor %}
+          
+        </div>   
+        <div class="container card">
+          <h2 class="text-center">Request Refund</h2>
+              <form method="POST" class="card-body">
+                  {% csrf_token %}
+                  <div class="md-form mb-5">
+                    {{form.ref_code}}
+                    <label for="shipping_address" class="">Reference Code</label>
+                  </div>
+                  <div class="md-form mb-5">
+                    {{form.message}}
+                    <label for="shipping_address" class="">Message</label>
+                  </div>
+                  <div class="md-form mb-5">
+                    {{form.email}}
+                    <label for="shipping_address" class="">Email</label>
+                  </div>
+                  <button type='submit' class='btn btn-primary'>Submit</button>
+                </form>
+        </div>
+      
+
+        </div>
+
+
+   
+
+  </main>
+
+{% endblock content %}
+
+

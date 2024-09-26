@@ -6,12 +6,12 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView,DetailView,View
 import requests
-from .models import Item, Order, OrderItem,Address,Coupon,Payment
+from .models import Item, Order, OrderItem,Address,Coupon,Payment,Refund
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
-from .forms import CheckoutForm,CouponForm
+from .forms import CheckoutForm,CouponForm,RefundForm
 from django.shortcuts import redirect
 import uuid
 from decouple import config
@@ -170,7 +170,7 @@ class CheckoutView(View):
 
         except Order.DoesNotExist:
             messages.error(self.request, "You do not have an active order.")
-            return redirect("order_summary")
+            return redirect("/")
     
 
 
@@ -399,8 +399,7 @@ def create_ref_code():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
 
 def verifyKhalti(request):
-    pass
-    # url = "https://a.khalti.com/api/v2/epayment/lookup/"
+    url = "https://a.khalti.com/api/v2/epayment/lookup/"
     # if request.method == 'GET':
     #     headers = {
     #         'Authorization': f'key {config("KHALTI_API_KEY")}',
@@ -412,25 +411,72 @@ def verifyKhalti(request):
     #     })
     #     res = requests.request('POST',url,headers=headers,data=data)
     #     new_res = json.loads(res.text)
-    #     if new_res['status'] == 'Completed':
-    #         order = Order.objects.get(user=request.user, ordered=False)
-    #         payment = Payment()
-    #         payment.pidx = pidx
-    #         payment.user = request.user
-    #         payment.amount = int(order.get_total())
-    #         payment.save()
-    #         order_items = order.items.all()
-    #         order_items.update(ordered=True)
-    #         for item in order_items:
-    #                 item.save()
-    #         order.ordered = True
-    #         order.payment = payment 
-    #         order.ref_code = create_ref_code()
-    #         messages.success(request, "Your order was successful!")
-    #         return redirect("/")
-    #     else:
-    #         messages.warning(request, "Payment not completed")
-    #         return redirect("core:checkout")
+        # if new_res['status'] == 'Completed':
+    if True:
+            order = Order.objects.get(user=request.user, ordered=False)
+            payment = Payment()
+            payment.pidx = "sdfhjPEZRWFJ5ygavzHWd5"
+            payment.user = request.user
+            payment.amount = int(order.get_total())
+            payment.save()
+            order_items = order.items.all()
+            order_items.update(ordered=True)
+            for item in order_items:
+                    item.save()
+            order.ordered = True
+            order.payment = payment 
+            order.ref_code = create_ref_code()
+            order.save()
+            messages.success(request, "Your order was successful!")
+            return redirect("/")
+    else:
+            messages.warning(request, "Payment not completed")
+            return redirect("core:checkout")
 
 def verifyEsewa(request):
     pass
+
+
+class RequestRefundView(View):
+    def get(self, *args, **kwargs):
+        form = RefundForm()
+        try:
+            print("1")
+            order = Order.objects.filter(user=self.request.user, ordered=True)
+            
+            context = {
+                'orders': order,
+                'form': form,
+            }
+            return render(self.request, "request_refund.html", context)
+
+        except:
+            print(2)
+            messages.warning(self.request, "You do not have an previous order")
+            return redirect("/")
+
+    def post(self, *args, **kwargs):
+        form = RefundForm(self.request.POST)
+        if form.is_valid():
+            ref_code = form.cleaned_data.get('ref_code')
+            message = form.cleaned_data.get('message')
+            email = form.cleaned_data.get('email')
+            # edit the order
+            try:
+                order = Order.objects.get(ref_code=ref_code)
+                order.refund_requested = True
+                order.save()
+
+                # store the refund
+                refund = Refund()
+                refund.order = order
+                refund.reason = message
+                refund.email = email
+                refund.save()
+
+                messages.info(self.request, "Your request was received.")
+                return redirect("core:request-refund")
+
+            except ObjectDoesNotExist:
+                messages.info(self.request, "This order does not exist.")
+                return redirect("core:request-refund")
