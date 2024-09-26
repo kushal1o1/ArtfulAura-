@@ -266,6 +266,7 @@ class CheckoutView(LoginRequiredMixin,View):
                     else:
                         messages.info(
                             self.request, "Please fill in the required shipping address fields")
+                        return redirect("/checkout")
 
                 payment_option = form.cleaned_data.get('payment_option')
 

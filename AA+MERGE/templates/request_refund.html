@@ -5,7 +5,8 @@
   <main>
 
       <div class="container-fluid">
-        <h1 class="my-5 h2 text-center">Your Previous Orders</div>
+        {% if orders%} 
+        <h1 class="my-5 h2 text-center">Your Previous Orders</h1>
         <div class="table-responsive text-nowrap col-md-8  container ">
           {% for object in orders %}
           <h1 class="text-center mb-4 h3 ">Order {{ forloop.counter}}</h1>
@@ -68,6 +69,7 @@
           {% endfor %}
           
         </div>   
+    
         <div class="container card">
           <h2 class="text-center">Request Refund</h2>
               <form method="POST" class="card-body">
@@ -87,7 +89,10 @@
                   <button type='submit' class='btn btn-primary'>Submit</button>
                 </form>
         </div>
-      
+        {% else %}
+       <p class="h2 text-center"> You dont have any previous orders</p>
+      {% endif%}
+
 
         </div>
 
