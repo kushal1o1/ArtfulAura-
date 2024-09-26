@@ -51,6 +51,7 @@ class Item(models.Model):
             'slug': self.slug
         })
 
+
 class OrderItem(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
@@ -155,6 +156,7 @@ class Refund(models.Model):
     reason = models.TextField()
     accepted = models.BooleanField(default=False)
     email = models.EmailField()
+    ref_code=models.CharField(max_length=20)
 
     def __str__(self):
         return f"{self.pk}"
