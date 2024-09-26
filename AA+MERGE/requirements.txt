@@ -1,0 +1,8 @@
+Django==5.0.3
+django_countries==7.6.1
+python-decouple==3.8
+Requests==2.32.3
+django-allauth==64.2.1
+Pillow==6.2.2
+django-crispy-forms==2.3
+django-debug-toolbar==4.4.6

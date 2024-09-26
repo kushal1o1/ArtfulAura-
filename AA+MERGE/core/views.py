@@ -157,8 +157,7 @@ def is_valid_form(values):
 
 
 
-
-class CheckoutView(View):
+class CheckoutView(LoginRequiredMixin,View):
     def get(self, *args, **kwargs):
         try:
             order = Order.objects.get(user=self.request.user, ordered=False)
@@ -292,7 +291,7 @@ def get_coupon(request, code):
         messages.info(request, "This coupon does not exist")
         return redirect("core:checkout")
 
-class AddCouponView(View):
+class AddCouponView(LoginRequiredMixin,View):
     print("Im at AddCouponView")
     def post(self, *args, **kwargs):
         form = CouponForm(self.request.POST or None)
@@ -354,7 +353,7 @@ def generate_transaction_uuid():
 
     return transaction_uuid
 
-class PaymentView(View):
+class PaymentView(LoginRequiredMixin,View):
     def get(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
         
@@ -413,6 +412,7 @@ def initkhalti(request):
 def create_ref_code():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
 
+@login_required
 def verifyKhalti(request):
     url = "https://a.khalti.com/api/v2/epayment/lookup/"
     # if request.method == 'GET':
@@ -448,11 +448,11 @@ def verifyKhalti(request):
             messages.warning(request, "Payment not completed")
             return redirect("core:checkout")
 
+@login_required
 def verifyEsewa(request):
     pass
 
-
-class RequestRefundView(View):
+class RequestRefundView(LoginRequiredMixin,View):
     def get(self, *args, **kwargs):
         form = RefundForm()
         try:
