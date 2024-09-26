@@ -32,9 +32,11 @@
         <li class="nav-item">
           <a class="nav-link waves-effect" href="/checkout"> Checkout</a>
         </li>
+        {% if request.user.is_authenticated %}
         <li class="nav-item">
           <a class="nav-link waves-effect" href="/request-refund/"> Request Refund</a>
         </li>
+        {% endif %}
       </ul>
 
       <!-- Right -->

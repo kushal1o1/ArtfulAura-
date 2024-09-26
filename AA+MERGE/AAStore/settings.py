@@ -34,6 +34,7 @@ INSTALLED_APPS = [
 
     'core',
     'crispy_forms',
+    'crispy_bootstrap4'
 ]
 
 MIDDLEWARE = [
@@ -130,6 +131,10 @@ AUTHENTICATION_BACKENDS = [
 ]
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 INSTALLED_APPS += [
     'debug_toolbar'
