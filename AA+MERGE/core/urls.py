@@ -13,6 +13,7 @@ from .views import(
     AddCouponView,
     PaymentView,
     RequestRefundView,
+    submit_review,
 )
 
 app_name='core'
@@ -32,6 +33,7 @@ urlpatterns = [
     path('initiate/',views.initkhalti,name="initiate"),
     path('verify-khalti/',views.verifyKhalti,name="verify-khalti"),
     path('verify-esewa/',views.verifyKhalti,name="verify-esewa"),
-    path('request-refund/', RequestRefundView.as_view(), name='request-refund')
+    path('request-refund/', RequestRefundView.as_view(), name='request-refund'),
+    path('product/<slug>/submit_review/', views.submit_review, name='submit_review'),
     
 ]

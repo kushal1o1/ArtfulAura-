@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.shortcuts import reverse
 from django_countries.fields import CountryField
+from django.db.models import Avg, Count
 
 
 CATEGORY_CHOICES = (
@@ -160,3 +161,31 @@ class Refund(models.Model):
 
     def __str__(self):
         return f"{self.pk}"
+
+
+class Review(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    rating = models.IntegerField(default=0)
+    message = models.TextField()
+    parent_review = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.rating} Stars'
+    
+    @classmethod
+    def get_average_rating(cls, item):
+        average = cls.objects.filter(item=item,parent_review__isnull=True).aggregate(Avg('rating'))['rating__avg']
+        if average:
+            average=round(average, 1)
+            full_stars = int(average)  
+            has_half_star = (average - full_stars) >= 0.1  
+            return average,full_stars, has_half_star
+        else:
+            return 0,0, False
+
+    @classmethod
+    def get_review_count(cls, item):
+        return cls.objects.filter(item=item,parent_review__isnull=True).count()

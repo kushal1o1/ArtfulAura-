@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load custom_filters %}
 {% block content %}
 
   <main class="mt-5 pt-4">
@@ -28,13 +28,28 @@
               </a>
             </div>
             <div class="rating mb-3">
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="far fa-star text-warning"></i>
-                        <span>(34 Reviews)</span>
+              {% if avg_rating  %}
+             {{avg_rating}}
+
+          {% for i in 5|times%}
+          {% if i < full_stars %}
+              <i class="fas fa-star text-warning"></i>
+          {% elif i == full_stars and has_half_star %}
+              <i class="fas fa-star-half-alt text-warning"></i>
+          {% else %}
+              <i class="far fa-star text-warning"></i>
+          {% endif %}
+      {% endfor %}
+                        <span>({{review_count}} Reviews)</span>
                     </div>
+                    {% else%}
+                    {% for i in 5|times%}
+                    <i class="fas fa-star text-warning"></i>
+                {% endfor %}
+                              <span>( No Reviews Yet)</span>
+                          </div>
+                        {% endif %}
+
 
             <p class="lead">
               {% if object.discount_price %}
@@ -96,73 +111,98 @@
   <div class="container">
     <div class="col-lg-8 container">
         <h4 class="fw-bold">Leave a Review</h4>
-        <form id="reviewForm">
+        <form id="reviewForm" method="POST" action="submit_review/">
+          {% csrf_token %}
             <div class="mb-3">
                 <label for="reviewText" class="form-label">Your Review</label>
-                <textarea class="form-control" id="reviewText" rows="4" placeholder="Write your review" required></textarea>
+                <textarea class="form-control" id="reviewText" rows="4" placeholder="Write your review" name="message" required></textarea>
             </div>
             <div class="mb-3">
-                <label for="reviewRating" class="form-label">Rating</label>
-                <select class="form-select" id="reviewRating" required>
-                    <option value="5">5 Stars</option>
-                    <option value="4">4 Stars</option>
-                    <option value="3">3 Stars</option>
-                    <option value="2">2 Stars</option>
-                    <option value="1">1 Star</option>
-                </select>
-            </div>
+              <label for="reviewRating" class="form-label">Rating</label>
+              <div class="star-rating">
+                  <!-- Display 5 stars with empty state initially -->
+                  {% for i in 5|times %}
+                      <span class="star far fa-star text-warning " data-value="{{ i }}" onclick="selectRating({{ i }})"></span>
+                  {% endfor %}
+              </div>
+              <!-- Hidden input to store the rating value -->
+              <input type="hidden" id="reviewRating" name="rating" value="0" required>
+          </div>
+          
+          <script>
+              // Function to handle star click and update the rating
+              function selectRating(rating) {
+                  // Update the hidden input with the selected rating value
+                  document.getElementById('reviewRating').value = rating+1;
+          
+                  // Select all star elements
+                  const stars = document.querySelectorAll('.star-rating .star');
+          
+                  // Loop over each star and add or remove the 'selected' class based on rating
+                  stars.forEach((star, index) => {
+                      if (index <= rating) {
+                          star.classList.add('fas');
+                      } else {
+                          star.classList.remove('fas');  // Remove highlight for stars above the rating
+                      }
+                  });
+              }
+          </script>
+
             <button type="submit" class="btn btn-primary">Submit Review</button>
         </form>
+        <h3>Reviews</h3>
+        <ul class="list-group container">
+            {% for review in reviews %}
+                <li class="list-group-item">
+                    <strong>@{{ review.user.username }}</strong>
+                    <div class="stars">
+                      {% for i in 5|times %}
+                      <span class=" fa-star text-warning {% if i < review.rating %} fas{% else%} far{% endif %}"></span>
+
+                      {% endfor %}
+                  </div>
+                    <p>{{ review.message }}</p>
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#reply-form-{{ review.id }}">Reply</button>
+                    
+                    <div id="reply-form-{{ review.id }}" class="collapse">
+                        <form method="POST"  method="POST" action="submit_review/">
+                            {% csrf_token %}
+                            <input type="hidden" name="parent_review" value="{{ review.id }}">
+                            {{ form.message.label }} <br>
+                            <textarea name="message" class="form-control" placeholder="Your reply..." required></textarea>
+                            <button type="submit" class="btn btn-primary">Submit Reply</button>
+                        </form>
+                    </div>
+                    {% if review.replies.all%}
+                    <ul class="container ">
+
+                        {% for reply in review.replies.all %}
+                            <li class="list-group-item  card-body text-start">
+                                <strong>@{{ reply.user.username }}</strong>
+                                <p>{{ reply.message }}</p>
+                                
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
     </div>
 </div>
 
-<!-- Display Reviews Section -->
- <div class="container">
-    <div class="col-lg-8 container">
-        <h4 class="fw-bold">Customer Reviews</h4>
-        <div id="reviewsList">
-            <!-- Reviews will be dynamically inserted here -->
-        </div>
-    </div>
-</div>
-</section>
-<!-- End Product Section -->
 
-<!-- MDBootstrap JS -->
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
-<script>
-// JavaScript to handle review submission and dynamic updates
-const reviewForm = document.getElementById('reviewForm');
-const reviewsList = document.getElementById('reviewsList');
 
-reviewForm.addEventListener('submit', function (e) {
-e.preventDefault();
+{% comment %} TRY {% endcomment %}
 
-// Get form values
-const review = document.getElementById('reviewText').value;
-const rating = document.getElementById('reviewRating').value;
 
-// Create a new review card
-const reviewCard = document.createElement('div');
-reviewCard.classList.add('d-flex', 'mb-3');
 
-const avatar = `<div class="me-3"><img src="https://via.placeholder.com/50x50" class="rounded-circle" alt="Reviewer"></div>`;
-const reviewContent = `
-    <div>
-        <h6 class="mb-1">Kushal</h6>
-        <p class="small review-text mb-0">"${review}"</p>
-        <p class="text-warning">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</p>
-    </div>
-`;
 
-reviewCard.innerHTML = avatar + reviewContent;
 
-// Append the new review to the reviews list
-reviewsList.appendChild(reviewCard);
-
-// Clear the form
-reviewForm.reset();
-});
-</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% comment %} TRY end {% endcomment %}
 
 {% endblock content %}

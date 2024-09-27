@@ -1,7 +1,7 @@
 from django import forms
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
-
+from .models import  Review
 
 PAYMENT_CHOICES = (
     ('E', 'Esewa'),
@@ -72,3 +72,4 @@ class RefundForm(forms.Form):
                 'id': 'email',
                 'class': 'form-control',
             }))
+    

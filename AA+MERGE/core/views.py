@@ -6,18 +6,18 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView,DetailView,View
 import requests
-from .models import Item, Order, OrderItem,Address,Coupon,Payment,Refund,CATEGORY_CHOICES
+from .models import Item, Order, OrderItem,Address,Coupon,Payment,Refund,CATEGORY_CHOICES,Review
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from .forms import CheckoutForm,CouponForm,RefundForm
 from django.shortcuts import redirect
+from django.urls import reverse
 import uuid
 from decouple import config
 import random
 import string
-
 
 
 # Create your views here.
@@ -44,6 +44,20 @@ class HomeView(ListView):
 class ItemDetailView(DetailView):
     model = Item
     template_name = "product_detail.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        item = self.object
+        average,full_stars, has_half_star = Review.get_average_rating(item)
+        review_count = Review.get_review_count(item)
+        context['avg_rating']=average
+        context['full_stars']=full_stars
+        context['has_half_star']=has_half_star
+        context['review_count']=review_count
+        context['reviews'] = item.reviews.filter(parent_review=None)  
+        return context
+    
+    
     
 @login_required
 def add_to_cart(request,slug):
@@ -293,7 +307,6 @@ def get_coupon(request, code):
         return redirect("core:checkout")
 
 class AddCouponView(LoginRequiredMixin,View):
-    print("Im at AddCouponView")
     def post(self, *args, **kwargs):
         form = CouponForm(self.request.POST or None)
         if form.is_valid():
@@ -497,3 +510,42 @@ class RequestRefundView(LoginRequiredMixin,View):
             except ObjectDoesNotExist:
                 messages.info(self.request, "This order does not exist.")
                 return redirect("core:request-refund")
+
+@login_required
+def submit_review(request, slug):
+    item = get_object_or_404(Item, slug=slug)
+    
+    if request.method == 'POST':
+        # Check if the form is for a reply or a review
+        parent_review_id = request.POST.get('parent_review')
+        message = request.POST.get('message')
+        rating = request.POST.get('rating')
+
+        if not message:
+            messages.info(request, "Message and rating are required")
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+        if parent_review_id:
+            print("I m here")
+            parent_review = get_object_or_404(Review, id=parent_review_id)
+            # Create a reply to the review
+            review = Review.objects.create(
+                item=parent_review.item,  # Associate with the same item
+                user=request.user,
+                message=message,
+                rating=parent_review.rating,  # Inherit rating from parent
+                parent_review=parent_review,
+            )
+        else:
+            # Create a new review
+            review = Review.objects.create(
+                item=item,
+                user=request.user,
+                message=message,
+                rating=rating,
+            )
+            
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    
