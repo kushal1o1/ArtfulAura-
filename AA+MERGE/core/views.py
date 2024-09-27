@@ -199,6 +199,8 @@ class CheckoutView(LoginRequiredMixin,View):
         except Order.DoesNotExist:
             messages.error(self.request, "You do not have an active order.")
             return redirect("/")
+        
+        
     
 
 

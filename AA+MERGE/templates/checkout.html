@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+{% if order.items.all%}
 
   <main >
     <div class="container wow fadeIn">
@@ -105,12 +106,14 @@
 
     </div>
   </main>
-
-
-
-
     
 
+  {% else %}
+  <div class="container">
+    <div class="alert alert-warning" role="alert">
+      Your cart is empty
+    </div>
+  {% endif %}
 {% endblock content %}
 
 {% block extra_scripts %}
