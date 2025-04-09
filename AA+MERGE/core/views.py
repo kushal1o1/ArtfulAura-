@@ -1,6 +1,7 @@
-import base64
-import hashlib
+
 import hmac
+import hashlib
+import base64
 import json
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
@@ -14,10 +15,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from .forms import CheckoutForm,CouponForm,RefundForm
 from django.shortcuts import redirect
 from django.urls import reverse
-import uuid
 from decouple import config
 import random
 import string
+import time
 
 
 # Create your views here.
@@ -330,62 +331,63 @@ class AddCouponView(LoginRequiredMixin,View):
             return redirect("core:checkout")
 
 
-# def generate_signature(message, secret):
-#     """
-#     Generate HMAC SHA-256 signature in Base64 format.
-
-#     :param message: The message to be signed (string).
-#     :param secret: The secret key (string).
-#     :return: Base64 encoded signature (string).
-#     """
-#     # Convert message and secret to bytes
-#     message_bytes = message.encode('utf-8')
-#     secret_bytes = secret.encode('utf-8')
-
-#     # Create HMAC object using SHA-256
-#     hmac_obj = hmac.new(secret_bytes, message_bytes, hashlib.sha256)
-
-#     # Generate the HMAC signature (raw bytes)
-#     signature = hmac_obj.digest()
-
-#     # Encode the signature into Base64
-#     base64_signature = base64.b64encode(signature).decode('utf-8')
-
-#     return base64_signature
 
 
 
-import uuid
-import hashlib
-import hmac
-from base64 import b64encode
-from decouple import config
+# Generate transaction UUID
+def generate_transaction_uuid():
+    # Generate a simple transaction ID in the format shown in docs: xx-xxx-xx
+    first = random.randint(10, 99)
+    middle = random.randint(100, 999)
+    last = random.randint(10, 99)
+    return f"{first}-{middle}-{last}"
+
+
+
+def generate_signature(
+        total_amount: float, 
+        transaction_uuid: str, 
+        key: str = "8gBm/:&EnhH.1/q", 
+        product_code: str = "EPAYTEST"
+) -> str:
+    """Generates hmac sha256 signature for eSewa payment gateway
+    """
+    if not total_amount or not transaction_uuid:
+        raise ValueError("Both 'total_amount' and 'transaction_uuid' are required.")
+    try:
+        message = f"total_amount={total_amount},transaction_uuid={transaction_uuid},product_code={product_code}"
+        key = key.encode('utf-8')
+        message = message.encode('utf-8')
+
+        # Generate HMAC-SHA256 digest
+        hmac_sha256 = hmac.new(key, message, hashlib.sha256)
+        digest = hmac_sha256.digest()
+
+        # Convert to Base64
+        signature = base64.b64encode(digest).decode('utf-8')
+        return signature
+    except Exception as e:
+        raise RuntimeError(f"Failed to generate signature: {e}")
 
 def generate_transaction_uuid():
-    return str(uuid.uuid4())
-
-def generate_signature(secret_key, message):
-    return hashlib.sha256(f'{secret_key}{message}'.encode('utf-8')).hexdigest()
-
+    current_time = int(time.time())
+    first = random.randint(10, 99)
+    middle = random.randint(100, 999)
+    last = current_time % 100  
+    return f"{first}-{middle}-{last}"
 class PaymentView(LoginRequiredMixin,View):
     def get(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
         
         if kwargs['payment_option'] == 'esewa':
+            transaction_id=generate_transaction_uuid()
+            signature_base64=generate_signature(total_amount=100, transaction_uuid=transaction_id,key=config('ESEWA_SECRET_KEY'), product_code="EPAYTEST")
             
-            uuid=generate_transaction_uuid()
-            # Ensure the message format matches what the server expects
-            message = f'total_amount={order.get_total},transaction_uuid={uuid},product_code=EPAYTEST'
-            message = f'total_amount=100,transaction_uuid={uuid},product_code=EPAYTEST'
-
-            # Generate the signature
-            # signature = genSha256("8gBm/:&EnhH.1/q", message)
-            signature = generate_signature(config('ESEWA_SECRET_KEY'), message)
             return render(self.request, "payment.html",context={
                 'order':order,
                 "method":"esewa",
-                'uuid': uuid,
-                "signature": signature,})
+                'uuid': transaction_id,
+                "signature": signature_base64,})
             
         elif kwargs['payment_option'] == 'kalti':
             return render(self.request, "payment.html",context={'order':order,"method":"khalti"})
