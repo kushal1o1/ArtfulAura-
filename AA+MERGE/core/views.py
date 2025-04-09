@@ -330,53 +330,53 @@ class AddCouponView(LoginRequiredMixin,View):
             return redirect("core:checkout")
 
 
-def generate_signature(message, secret):
-    """
-    Generate HMAC SHA-256 signature in Base64 format.
+# def generate_signature(message, secret):
+#     """
+#     Generate HMAC SHA-256 signature in Base64 format.
 
-    :param message: The message to be signed (string).
-    :param secret: The secret key (string).
-    :return: Base64 encoded signature (string).
-    """
-    # Convert message and secret to bytes
-    message_bytes = message.encode('utf-8')
-    secret_bytes = secret.encode('utf-8')
+#     :param message: The message to be signed (string).
+#     :param secret: The secret key (string).
+#     :return: Base64 encoded signature (string).
+#     """
+#     # Convert message and secret to bytes
+#     message_bytes = message.encode('utf-8')
+#     secret_bytes = secret.encode('utf-8')
 
-    # Create HMAC object using SHA-256
-    hmac_obj = hmac.new(secret_bytes, message_bytes, hashlib.sha256)
+#     # Create HMAC object using SHA-256
+#     hmac_obj = hmac.new(secret_bytes, message_bytes, hashlib.sha256)
 
-    # Generate the HMAC signature (raw bytes)
-    signature = hmac_obj.digest()
+#     # Generate the HMAC signature (raw bytes)
+#     signature = hmac_obj.digest()
 
-    # Encode the signature into Base64
-    base64_signature = base64.b64encode(signature).decode('utf-8')
+#     # Encode the signature into Base64
+#     base64_signature = base64.b64encode(signature).decode('utf-8')
 
-    return base64_signature
+#     return base64_signature
 
 
+
+import uuid
+import hashlib
+import hmac
+from base64 import b64encode
+from decouple import config
 
 def generate_transaction_uuid():
-    # Generate a random UUID
-    full_uuid = uuid.uuid4()
-    
-    # Split the UUID into segments: first 2 digits, next 3 digits, and last 2 digits
-    part1 = str(full_uuid).replace('-', '')[:2]  # First 2 digits
-    part2 = str(full_uuid).replace('-', '')[2:5]  # Next 3 digits
-    part3 = str(full_uuid).replace('-', '')[5:7]  # Last 2 digits
-    
-    # Format as '11-201-13' like pattern
-    transaction_uuid = f"{part1}-{part2}-{part3}"
+    return str(uuid.uuid4())
 
-    return transaction_uuid
+def generate_signature(secret_key, message):
+    return hashlib.sha256(f'{secret_key}{message}'.encode('utf-8')).hexdigest()
 
 class PaymentView(LoginRequiredMixin,View):
     def get(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
         
         if kwargs['payment_option'] == 'esewa':
+            
             uuid=generate_transaction_uuid()
             # Ensure the message format matches what the server expects
-            message = f"total_amount={order.get_total},transaction_uuid={uuid},product_code=EPAYTEST"
+            message = f'total_amount={order.get_total},transaction_uuid={uuid},product_code=EPAYTEST'
+            message = f'total_amount=100,transaction_uuid={uuid},product_code=EPAYTEST'
 
             # Generate the signature
             # signature = genSha256("8gBm/:&EnhH.1/q", message)
@@ -551,3 +551,63 @@ def submit_review(request, slug):
         return redirect(request.META.get('HTTP_REFERER', '/'))
 
     
+    
+
+    template_name = "Testpayment.html"
+
+    def get(self, request, *args, **kwargs):
+        try:
+            order = Order.objects.get(id=kwargs.get('order_id'))
+
+                # Generate unique transaction ID
+            transaction_uuid = generate_transaction_uuid()
+                
+                # Prepare payment data
+            total_amount = str(order.get_total())
+            product_code = "EPAYTEST"  # Use your actual product code in production
+                
+                # Create message string for signature
+            message = (
+                    f"total_amount={total_amount},"
+                    f"transaction_uuid={transaction_uuid},"
+                    f"product_code={product_code}"
+                )
+                
+                # Generate signature using secret key
+            signature = generate_signature(
+                    config('ESEWA_SECRET_KEY'),
+                    message
+                )
+                
+                # Prepare payment data for template
+            payment_data = {
+                    'amount': total_amount,
+                    'tax_amount': "0",
+                    'product_service_charge': "0",
+                    'product_delivery_charge': "0",
+                    'total_amount': total_amount,
+                    'transaction_uuid': transaction_uuid,
+                    'product_code': product_code,
+                    'signature': signature,
+                    'success_url': request.build_absolute_uri(reverse('payment_success')),
+                    'failure_url': request.build_absolute_uri(reverse('payment_failed')),
+                }
+                
+
+                
+            context = {
+                    'order': order,
+                    'payment_data': payment_data,
+                    'method': 'esewa',
+                }
+                
+            return render(request, TestPayment.html, context)
+            
+            return render(request, self.template_name, {'order': order})
+            
+        except Order.DoesNotExist:
+            messages.error(request, "Order not found")
+            return redirect('orders')
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+            return redirect('orders')

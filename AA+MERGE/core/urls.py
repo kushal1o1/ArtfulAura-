@@ -36,4 +36,5 @@ urlpatterns = [
     path('request-refund/', RequestRefundView.as_view(), name='request-refund'),
     path('product/<slug>/submit_review/', views.submit_review, name='submit_review'),
     
+    
 ]

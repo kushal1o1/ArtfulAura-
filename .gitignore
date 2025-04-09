@@ -20,3 +20,6 @@ AA+_BACKEND/media/
 # IDE-specific
 .vscode/
 .idea/
+
+#testing page
+AA+MERGE/templates/test.html
