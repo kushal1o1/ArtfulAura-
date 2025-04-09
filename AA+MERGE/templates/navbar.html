@@ -1,9 +1,11 @@
 {% load cart_template_tags %}
 <nav class="bg-dark navbar fixed-top navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
-    <!-- Brand -->
-    <a class="navbar-brand waves-effect" href="/">
-      <strong class="text-dark">ArtFulAura+</strong>
+    <!-- Brand with logo -->
+    <a class="navbar-brand waves-effect d-flex align-items-center" href="/">
+      {% load static %}
+      <img src="{% static 'images/logo.png' %}" alt="logo" class="img-fluid" style="max-height: 40px; max-width: 100%;">
+      <strong class="text-white ml-2 d-none d-sm-inline">AA+</strong>
     </a>
 
     <!-- Collapse -->
@@ -24,18 +26,18 @@
       <!-- Left -->
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link waves-effect" href="/"
-            >Home
+          <a class="nav-link waves-effect" href="/">
+            Home
             <span class="sr-only">(current)</span>
           </a>
         </li>
         {% if request.user.is_authenticated %}
         <li class="nav-item">
-          <a class="nav-link waves-effect" href="/checkout"> Checkout</a>
+          <a class="nav-link waves-effect" href="/checkout">Checkout</a>
         </li>
         
         <li class="nav-item">
-          <a class="nav-link waves-effect" href="/request-refund/"> Request Refund</a>
+          <a class="nav-link waves-effect" href="/request-refund/">Request Refund</a>
         </li>
         {% endif %}
       </ul>
@@ -48,28 +50,27 @@
             href="{% url 'core:order-summary' %}"
             class="nav-link waves-effect"
           >
- 
             <span class="badge red z-depth-1 mr-1">
               {{ request.user|cart_item_count }}
             </span>
             <i class="fas fa-shopping-cart"></i>
-            <span class="clearfix d-none d-sm-inline-block"> Cart </span>
+            <span class="clearfix d-none d-sm-inline-block">Cart</span>
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link waves-effect" href="{% url 'account_logout' %}">
-            <span class="clearfix d-none d-sm-inline-block"> Logout </span>
+            <span class="clearfix d-none d-sm-inline-block">Logout</span>
           </a>
         </li>
         {% else %}
         <li class="nav-item">
           <a class="nav-link waves-effect" href="{% url 'account_login' %}">
-            <span class="clearfix d-none d-sm-inline-block"> Login </span>
+            <span class="clearfix d-none d-sm-inline-block">Login</span>
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link waves-effect" href="{% url 'account_signup' %}">
-            <span class="clearfix d-none d-sm-inline-block"> Signup </span>
+            <span class="clearfix d-none d-sm-inline-block">Signup</span>
           </a>
         </li>
         {% endif %}
