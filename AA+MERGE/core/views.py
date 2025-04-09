@@ -375,13 +375,21 @@ def generate_transaction_uuid():
     middle = random.randint(100, 999)
     last = current_time % 100  
     return f"{first}-{middle}-{last}"
+
+
+def create_ref_code():
+    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
+
+
 class PaymentView(LoginRequiredMixin,View):
     def get(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
-        
+        order.ref_code = create_ref_code()
+        order.save()
+        total_amount = order.get_total()
         if kwargs['payment_option'] == 'esewa':
             transaction_id=generate_transaction_uuid()
-            signature_base64=generate_signature(total_amount=100, transaction_uuid=transaction_id,key=config('ESEWA_SECRET_KEY'), product_code="EPAYTEST")
+            signature_base64=generate_signature(total_amount=total_amount, transaction_uuid=transaction_id,key=config('ESEWA_SECRET_KEY'), product_code="EPAYTEST")
             
             return render(self.request, "payment.html",context={
                 'order':order,
@@ -426,9 +434,6 @@ def initkhalti(request):
     new_res = json.loads(response.text)
     return redirect(new_res['payment_url'])
 
-
-def create_ref_code():
-    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
 
 @login_required
 def verifyKhalti(request):
