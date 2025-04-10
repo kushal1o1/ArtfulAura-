@@ -404,7 +404,7 @@ class PaymentView(LoginRequiredMixin,View):
             messages.warning(self.request, "Invalid payment option selected")
             return redirect("core:checkout")
 
-def initkhalti(request):
+def init_khalti(request):
     url = "https://a.khalti.com/api/v2/epayment/initiate/"
     return_url = request.POST.get('return_url')
     website_url = request.POST.get('return_url')
@@ -436,7 +436,7 @@ def initkhalti(request):
 
 
 @login_required
-def verifyKhalti(request):
+def verify_khalti(request):
     url = "https://a.khalti.com/api/v2/epayment/lookup/"
     # if request.method == 'GET':
     #     headers = {
@@ -498,7 +498,7 @@ def verify_signature(Prevmessage,
             return False, None
 
 @login_required
-def verifyEsewa(request):
+def verify_esewa(request):
     
     is_valid, response_data = verify_signature("TODO:",
         response_body_base64=request.POST.get("response_body_base64"),

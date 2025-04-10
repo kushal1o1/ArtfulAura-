@@ -30,11 +30,11 @@ urlpatterns = [
     path('checkout/', CheckoutView.as_view(), name='checkout'),
     path('add-coupon/', AddCouponView.as_view(), name='add-coupon'),
     path('payment/<payment_option>/', PaymentView.as_view(), name='payment'),
-    path('initiate/',views.initkhalti,name="initiate"),
-    path('verify-khalti/',views.verifyKhalti,name="verify-khalti"),
-    path('verify-esewa/',views.verifyKhalti,name="verify-esewa"),
+    path('initiate/',views.init_khalti,name="initiate"),
+    path('verify-khalti/',views.verify_khalti,name="verify-khalti"),
+    path('verify-esewa/',views.verify_esewa,name="verify-esewa"),
     path('request-refund/', RequestRefundView.as_view(), name='request-refund'),
-    path('product/<slug>/submit_review/', views.submit_review, name='submit_review'),
+    path('product/<slug>/submit_review/', submit_review, name='submit_review'),
     
     
 ]
