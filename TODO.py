@@ -41,3 +41,7 @@ done= False
 # TODO:Create a Secure integration with payment gateways like Stripe etc.
 done= False
 
+
+# TODO: Send a email for the order confirmation and payment confirmation 
+
+done= False
