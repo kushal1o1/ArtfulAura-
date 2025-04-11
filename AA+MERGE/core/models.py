@@ -93,6 +93,7 @@ class Order(models.Model):
     received = models.BooleanField(default=False)
     refund_requested = models.BooleanField(default=False)
     refund_granted = models.BooleanField(default=False)
+    signature = models.CharField(max_length=256, blank=True, null=True)
     
     def __str__(self):
         return self.user.username
@@ -138,6 +139,7 @@ class Payment(models.Model):
                              on_delete=models.SET_NULL, blank=True, null=True)
     amount = models.FloatField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50, default='Pending')
 
     def __str__(self):
         return self.user.username

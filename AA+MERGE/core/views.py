@@ -385,12 +385,12 @@ class PaymentView(LoginRequiredMixin,View):
     def get(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
         order.ref_code = create_ref_code()
-        order.save()
         total_amount = order.get_total()
         if kwargs['payment_option'] == 'esewa':
             transaction_id=generate_transaction_uuid()
             signature_base64=generate_signature(total_amount=total_amount, transaction_uuid=transaction_id,key=config('ESEWA_SECRET_KEY'), product_code="EPAYTEST")
-            
+            order.signature=signature_base64
+            order.save()
             return render(self.request, "payment.html",context={
                 'order':order,
                 "method":"esewa",
@@ -471,59 +471,18 @@ def verify_khalti(request):
             messages.warning(request, "Payment not completed")
             return redirect("core:checkout")
 
-def verify_signature(Prevmessage,
-        response_body_base64
-    ) :
-        """
-        Verifies the signature of an eSewa response.
-        """
-        try:
-            response_body_json = base64.b64decode(response_body_base64).decode("utf-8")
-            response_data: dict[str, str] = json.loads(response_body_json)
-            
-            signed_field_names: str = response_data["signed_field_names"]
-            received_signature: str = response_data["signature"]
-            
-            field_names = signed_field_names.split(",")
-            message: str = ",".join(
-                f"{field_name}={response_data[field_name]}" for field_name in field_names
-            )
-            is_valid: bool = received_signature == generate_signature(
-                message=Prevmessage,
-                key=config('ESEWA_SECRET_KEY'),
-            )
-            return is_valid, response_data if is_valid else None
-        except Exception as e:
-            print(f"Error verifying signature: {e}")
-            return False, None
 
-@login_required
-def verify_esewa(request):
-    
-    is_valid, response_data = verify_signature("TODO:",
-        response_body_base64=request.POST.get("response_body_base64"),
-    )
-    if is_valid:
-        print(response_data)
-        messages.success(request, "Payment was successful!")
-        order = Order.objects.get(user=request.user, ordered=False)
-        payment = Payment()
-        payment.pidx = response_data["transaction_code"]
-        payment.user = request.user
-        payment.amount = response_data["total_amount"]
-        payment.save()
-        is_completed
-
-        
-        return json.dumps({"status": "success","response":response_data})
-    pass
-
-def get_status(self, dev: bool) -> str:
+def get_status(data, dev: bool) -> str:
         """
         Fetches the transaction status from eSewa.
         """
-        status_url_testing = f"https://rc.esewa.com.np/api/epay/transaction/status/?product_code={self.product_code}&total_amount={self.amount}&transaction_uuid={self.uuid}"
-        status_url_prod = f"https://epay.esewa.com.np/api/epay/transaction/status/?product_code={self.product_code}&total_amount={self.amount}&transaction_uuid={self.uuid}"
+        print(data)
+        print(data["product_code"])
+  
+        
+        status_url_testing = f"https://rc.esewa.com.np/api/epay/transaction/status/?product_code={data["product_code"]}&total_amount={data["total_amount"]}&transaction_uuid={data["transaction_uuid"]}"
+        status_url_prod = f"https://epay.esewa.com.np/api/epay/transaction/status/?product_code={data["product_code"]}&total_amount={data["total_amount"]}&transaction_uuid={data["transaction_uuid"]}"
+        
 
         url = status_url_testing if dev else status_url_prod
         response = requests.get(url)
@@ -532,14 +491,88 @@ def get_status(self, dev: bool) -> str:
             raise requests.exceptions.RequestException(f"Error fetching status: {response.text}")
 
         response_data = response.json()
+        print(response_data)
         return response_data.get("status", "UNKNOWN")
 
-def is_completed(self, dev: bool) -> bool:
-        """
-        Checks if the transaction is completed.
-        """
-        return self.get_status(dev) == "COMPLETE"
     
+
+def verify_signature(prev_signature,
+        response_body_base64
+    ) :
+        """
+        Verifies the signature of an eSewa response.
+        """
+        try:
+            print("Start*")
+            print(response_body_base64)
+            response_body_json = base64.b64decode(response_body_base64).decode("utf-8")
+            print(1*"*")
+            response_data: dict[str, str] = json.loads(response_body_json)
+            print(2*"*")
+            received_signature: str = response_data["signature"]
+            print(3*"*")
+            signed_field_names: str = response_data["signed_field_names"]
+            field_names = signed_field_names.split(",")
+            message: str = ",".join(
+                f"{field_name}={response_data[field_name]}" for field_name in field_names
+            )
+            secret="8gBm/:&EnhH.1/q".encode('utf-8')
+            message = message.encode('utf-8')
+            hmac_sha256 = hmac.new(secret, message, hashlib.sha256)
+            digest = hmac_sha256.digest()
+            signature = base64.b64encode(digest).decode('utf-8')
+            is_valid: bool = received_signature == signature
+            print(is_valid)
+            return is_valid, response_data if is_valid else None
+        except Exception as e:
+            print(4*"*")
+            print(f"Error verifying signature: {e}")
+            return False, None
+
+@login_required
+def verify_esewa(request):
+    order = Order.objects.get(user=request.user, ordered=False)
+    signature =order.signature
+    is_valid, response_data = verify_signature(signature,
+        response_body_base64 = request.GET.get("data"),
+    )
+    if is_valid:
+        print(response_data)
+        transaction_uuid=response_data["transaction_uuid"]
+        order.signature=transaction_uuid
+        order.save()
+        if get_status(response_data,dev=True)== "COMPLETE":
+           print("Payment is complete")
+           messages.success(request, "Payment was successful!")
+           order = Order.objects.get(user=request.user, ordered=False)
+           payment = Payment()
+           payment.pidx = transaction_uuid
+           payment.user = request.user
+           payment.amount =response_data["total_amount"]
+           payment.status="COMPLETED"
+           payment.save()
+           order_items = order.items.all()
+           order_items.update(ordered=True)
+           for item in order_items:
+                   item.save()
+           order.ordered = True
+           order.payment = payment 
+           order.ref_code = create_ref_code()
+           order.save()
+           return redirect("core:home")
+        else:
+            # TODO:HAndle other requests
+              messages.warning(request, "Payment not completed")
+              return redirect("core:checkout")
+    else:
+        print("Signature verification failed")
+        messages.warning(request, "Signature verification failed")
+        return redirect("core:checkout")
+
+        
+
+
+
 class RequestRefundView(LoginRequiredMixin,View):
     def get(self, *args, **kwargs):
         form = RefundForm()
