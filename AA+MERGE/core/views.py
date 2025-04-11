@@ -19,7 +19,7 @@ from decouple import config
 import random
 import string
 import time
-
+from .services import add_to_cart_service
 
 # Create your views here.
 class HomeView(ListView):
@@ -75,10 +75,10 @@ def add_to_cart(request,slug):
         if order.items.filter(item__slug=item.slug).exists():
             order_item.quantity += 1
             order_item.save()
+        if add_to_cart_service(order,item,order_item):
             messages.info(request, "This item quantity was updated.")
             return redirect("core:order-summary")
         else:
-            order.items.add(order_item)
             messages.info(request, "This item was added to your cart.")
             return redirect("core:order-summary")
     else:
