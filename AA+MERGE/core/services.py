@@ -103,6 +103,40 @@ def generate_signature(
         raise RuntimeError(f"Failed to generate signature: {e}")
 
 
+def verify_signature(prev_signature,
+        response_body_base64
+    ) :
+        """
+        Verifies the signature of an eSewa response.
+        """
+        try:
+            print("Start*")
+            print(response_body_base64)
+            response_body_json = base64.b64decode(response_body_base64).decode("utf-8")
+            print(1*"*")
+            response_data: dict[str, str] = json.loads(response_body_json)
+            print(2*"*")
+            received_signature: str = response_data["signature"]
+            print(3*"*")
+            signed_field_names: str = response_data["signed_field_names"]
+            field_names = signed_field_names.split(",")
+            message: str = ",".join(
+                f"{field_name}={response_data[field_name]}" for field_name in field_names
+            )
+            secret="8gBm/:&EnhH.1/q".encode('utf-8')
+            message = message.encode('utf-8')
+            hmac_sha256 = hmac.new(secret, message, hashlib.sha256)
+            digest = hmac_sha256.digest()
+            signature = base64.b64encode(digest).decode('utf-8')
+            is_valid: bool = received_signature == signature
+            print(is_valid)
+            return is_valid, response_data if is_valid else None
+        except Exception as e:
+            print(4*"*")
+            print(f"Error verifying signature: {e}")
+            return False, None
+
+
 def generate_transaction_uuid():
     current_time = int(time.time())
     first = random.randint(10, 99)
@@ -171,3 +205,26 @@ def handle_order_complete(user,transaction_uuid, total_amount):
     order.payment = payment 
     order.ref_code = create_ref_code()
     order.save()
+    
+def handle_refund_request(form):
+    """
+    Handles refund request process.
+    """
+    ref_code = form.cleaned_data.get('ref_code')
+    message = form.cleaned_data.get('message')
+    email = form.cleaned_data.get('email')
+    # edit the order
+    try:
+        order = Order.objects.get(ref_code=ref_code)
+        order.refund_requested = True
+        order.save  
+        # store the refund
+        refund = Refund()
+        refund.order = order
+        refund.reason = message
+        refund.email = email
+        refund.ref_code=ref_code
+        refund.save()
+        return True
+    except ObjectDoesNotExist:
+        return False

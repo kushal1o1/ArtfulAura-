@@ -19,7 +19,7 @@ from decouple import config
 import random
 import string
 import time
-from .services import add_to_cart_service,remove_from_cart_service,remove_single_item_from_cart_service,generate_transaction_uuid,generate_signature,create_ref_code,is_valid_form,handle_esewa_payment,get_esewa_status,handle_order_complete
+from .services import add_to_cart_service,remove_from_cart_service,remove_single_item_from_cart_service,generate_transaction_uuid,generate_signature,create_ref_code,is_valid_form,handle_esewa_payment,get_esewa_status,handle_order_complete,handle_refund_request,verify_signature
 
 # Create your views here.
 class HomeView(ListView):
@@ -396,39 +396,6 @@ def verify_khalti(request):
 
 
 
-def verify_signature(prev_signature,
-        response_body_base64
-    ) :
-        """
-        Verifies the signature of an eSewa response.
-        """
-        try:
-            print("Start*")
-            print(response_body_base64)
-            response_body_json = base64.b64decode(response_body_base64).decode("utf-8")
-            print(1*"*")
-            response_data: dict[str, str] = json.loads(response_body_json)
-            print(2*"*")
-            received_signature: str = response_data["signature"]
-            print(3*"*")
-            signed_field_names: str = response_data["signed_field_names"]
-            field_names = signed_field_names.split(",")
-            message: str = ",".join(
-                f"{field_name}={response_data[field_name]}" for field_name in field_names
-            )
-            secret="8gBm/:&EnhH.1/q".encode('utf-8')
-            message = message.encode('utf-8')
-            hmac_sha256 = hmac.new(secret, message, hashlib.sha256)
-            digest = hmac_sha256.digest()
-            signature = base64.b64encode(digest).decode('utf-8')
-            is_valid: bool = received_signature == signature
-            print(is_valid)
-            return is_valid, response_data if is_valid else None
-        except Exception as e:
-            print(4*"*")
-            print(f"Error verifying signature: {e}")
-            return False, None
-
 @login_required
 def verify_esewa(request):
     order = Order.objects.get(user=request.user, ordered=False)
@@ -481,27 +448,10 @@ class RequestRefundView(LoginRequiredMixin,View):
     def post(self, *args, **kwargs):
         form = RefundForm(self.request.POST)
         if form.is_valid():
-            ref_code = form.cleaned_data.get('ref_code')
-            message = form.cleaned_data.get('message')
-            email = form.cleaned_data.get('email')
-            # edit the order
-            try:
-                order = Order.objects.get(ref_code=ref_code)
-                order.refund_requested = True
-                order.save()
-
-                # store the refund
-                refund = Refund()
-                refund.order = order
-                refund.reason = message
-                refund.email = email
-                refund.ref_code=ref_code
-                refund.save()
-
+            if handle_refund_request(form):
                 messages.info(self.request, "Your request was received.")
                 return redirect("core:request-refund")
-
-            except ObjectDoesNotExist:
+            else:
                 messages.info(self.request, "This order does not exist.")
                 return redirect("core:request-refund")
 
@@ -541,65 +491,3 @@ def submit_review(request, slug):
             )
             
         return redirect(request.META.get('HTTP_REFERER', '/'))
-
-    
-    
-
-    template_name = "Testpayment.html"
-
-    def get(self, request, *args, **kwargs):
-        try:
-            order = Order.objects.get(id=kwargs.get('order_id'))
-
-                # Generate unique transaction ID
-            transaction_uuid = generate_transaction_uuid()
-                
-                # Prepare payment data
-            total_amount = str(order.get_total())
-            product_code = "EPAYTEST"  # Use your actual product code in production
-                
-                # Create message string for signature
-            message = (
-                    f"total_amount={total_amount},"
-                    f"transaction_uuid={transaction_uuid},"
-                    f"product_code={product_code}"
-                )
-                
-                # Generate signature using secret key
-            signature = generate_signature(
-                    config('ESEWA_SECRET_KEY'),
-                    message
-                )
-                
-                # Prepare payment data for template
-            payment_data = {
-                    'amount': total_amount,
-                    'tax_amount': "0",
-                    'product_service_charge': "0",
-                    'product_delivery_charge': "0",
-                    'total_amount': total_amount,
-                    'transaction_uuid': transaction_uuid,
-                    'product_code': product_code,
-                    'signature': signature,
-                    'success_url': request.build_absolute_uri(reverse('payment_success')),
-                    'failure_url': request.build_absolute_uri(reverse('payment_failed')),
-                }
-                
-
-                
-            context = {
-                    'order': order,
-                    'payment_data': payment_data,
-                    'method': 'esewa',
-                }
-                
-            return render(request, TestPayment.html, context)
-            
-            return render(request, self.template_name, {'order': order})
-            
-        except Order.DoesNotExist:
-            messages.error(request, "Order not found")
-            return redirect('orders')
-        except Exception as e:
-            messages.error(request, f"An error occurred: {str(e)}")
-            return redirect('orders')
