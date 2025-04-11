@@ -121,3 +121,53 @@ def is_valid_form(values):
             valid = False
     return valid
 
+
+def handle_esewa_payment(total_amount, order):
+    """
+    Handles esewa payment process.
+    """
+    transaction_id=generate_transaction_uuid()
+    signature_base64=generate_signature(total_amount=total_amount, transaction_uuid=transaction_id,key=config('ESEWA_SECRET_KEY'), product_code="EPAYTEST")
+    order.signature=signature_base64
+    order.save()
+    return transaction_id, signature_base64
+
+
+def get_esewa_status(data, dev: bool) -> str:
+        """
+        Fetches the transaction status from eSewa.
+        """
+  
+        
+        status_url_testing = f"https://rc.esewa.com.np/api/epay/transaction/status/?product_code={data["product_code"]}&total_amount={data["total_amount"]}&transaction_uuid={data["transaction_uuid"]}"
+        status_url_prod = f"https://epay.esewa.com.np/api/epay/transaction/status/?product_code={data["product_code"]}&total_amount={data["total_amount"]}&transaction_uuid={data["transaction_uuid"]}"
+        
+
+        url = status_url_testing if dev else status_url_prod
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            raise requests.exceptions.RequestException(f"Error fetching status: {response.text}")
+
+        response_data = response.json()
+        return response_data.get("status", "UNKNOWN")
+
+def handle_order_complete(user,transaction_uuid, total_amount):
+    """
+    Handles order completion process for all payment methods.
+    """
+    order = Order.objects.get(user=user, ordered=False)
+    payment = Payment()
+    payment.pidx = transaction_uuid
+    payment.user = user
+    payment.amount =total_amount
+    payment.status="COMPLETED"
+    payment.save()
+    order_items = order.items.all()
+    order_items.update(ordered=True)
+    for item in order_items:
+            item.save()
+    order.ordered = True
+    order.payment = payment 
+    order.ref_code = create_ref_code()
+    order.save()

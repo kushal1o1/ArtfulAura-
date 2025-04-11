@@ -19,7 +19,7 @@ from decouple import config
 import random
 import string
 import time
-from .services import add_to_cart_service,remove_from_cart_service,remove_single_item_from_cart_service,generate_transaction_uuid,generate_signature,create_ref_code,is_valid_form
+from .services import add_to_cart_service,remove_from_cart_service,remove_single_item_from_cart_service,generate_transaction_uuid,generate_signature,create_ref_code,is_valid_form,handle_esewa_payment,get_esewa_status,handle_order_complete
 
 # Create your views here.
 class HomeView(ListView):
@@ -313,10 +313,7 @@ class PaymentView(LoginRequiredMixin,View):
         order.ref_code = create_ref_code()
         total_amount = order.get_total()
         if kwargs['payment_option'] == 'esewa':
-            transaction_id=generate_transaction_uuid()
-            signature_base64=generate_signature(total_amount=total_amount, transaction_uuid=transaction_id,key=config('ESEWA_SECRET_KEY'), product_code="EPAYTEST")
-            order.signature=signature_base64
-            order.save()
+            transaction_id, signature_base64 = handle_esewa_payment(total_amount,order)
             return render(self.request, "payment.html",context={
                 'order':order,
                 "method":"esewa",
@@ -398,29 +395,6 @@ def verify_khalti(request):
             return redirect("core:checkout")
 
 
-def get_status(data, dev: bool) -> str:
-        """
-        Fetches the transaction status from eSewa.
-        """
-        print(data)
-        print(data["product_code"])
-  
-        
-        status_url_testing = f"https://rc.esewa.com.np/api/epay/transaction/status/?product_code={data["product_code"]}&total_amount={data["total_amount"]}&transaction_uuid={data["transaction_uuid"]}"
-        status_url_prod = f"https://epay.esewa.com.np/api/epay/transaction/status/?product_code={data["product_code"]}&total_amount={data["total_amount"]}&transaction_uuid={data["transaction_uuid"]}"
-        
-
-        url = status_url_testing if dev else status_url_prod
-        response = requests.get(url)
-
-        if response.status_code != 200:
-            raise requests.exceptions.RequestException(f"Error fetching status: {response.text}")
-
-        response_data = response.json()
-        print(response_data)
-        return response_data.get("status", "UNKNOWN")
-
-    
 
 def verify_signature(prev_signature,
         response_body_base64
@@ -467,24 +441,11 @@ def verify_esewa(request):
         transaction_uuid=response_data["transaction_uuid"]
         order.signature=transaction_uuid
         order.save()
-        if get_status(response_data,dev=True)== "COMPLETE":
+        if get_esewa_status(response_data,dev=True)== "COMPLETE":
            print("Payment is complete")
            messages.success(request, "Payment was successful!")
-           order = Order.objects.get(user=request.user, ordered=False)
-           payment = Payment()
-           payment.pidx = transaction_uuid
-           payment.user = request.user
-           payment.amount =response_data["total_amount"]
-           payment.status="COMPLETED"
-           payment.save()
-           order_items = order.items.all()
-           order_items.update(ordered=True)
-           for item in order_items:
-                   item.save()
-           order.ordered = True
-           order.payment = payment 
-           order.ref_code = create_ref_code()
-           order.save()
+           total_amount = response_data["total_amount"]
+           handle_order_complete(request,transaction_uuid,total_amount)
            return redirect("core:home")
         else:
             # TODO:HAndle other requests
