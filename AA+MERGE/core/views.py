@@ -19,7 +19,7 @@ from decouple import config
 import random
 import string
 import time
-from .services import add_to_cart_service
+from .services import add_to_cart_service,remove_from_cart_service,remove_single_item_from_cart_service
 
 # Create your views here.
 class HomeView(ListView):
@@ -99,14 +99,7 @@ def remove_from_cart(request,slug):
     if order_qs.exists():
         order = order_qs[0]
         # check if the order item is in the order
-        if order.items.filter(item__slug=item.slug).exists():
-            order_item = OrderItem.objects.filter(
-                item=item,
-                user=request.user,
-                ordered=False
-            )[0]
-            order.items.remove(order_item)
-            order_item.delete()
+        if remove_from_cart_service(order,item,request.user):
             messages.info(request, "This item was removed from your cart.")
             return redirect("core:order-summary")
         else:
@@ -127,17 +120,7 @@ def remove_single_item_from_cart(request, slug):
     if order_qs.exists():
         order = order_qs[0]
         # check if the order item is in the order
-        if order.items.filter(item__slug=item.slug).exists():
-            order_item = OrderItem.objects.filter(
-                item=item,
-                user=request.user,
-                ordered=False
-            )[0]
-            if order_item.quantity > 1:
-                order_item.quantity -= 1
-                order_item.save()
-            else:
-                order.items.remove(order_item)
+        if remove_single_item_from_cart_service(order,item,request.user):
             messages.info(request, "This item quantity was updated.")
             return redirect("core:order-summary")
         else:
