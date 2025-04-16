@@ -180,12 +180,12 @@
                   
                   <p class="mb-2">{{ review.message }}</p>
                   
-                  <div class="d-flex align-items-center text-muted small mb-2">
-                    <button class="btn btn-sm text-muted p-0 me-3" data-toggle="collapse" data-target="#reply-form-{{ review.id }}">
-                      <i class="fas fa-reply me-1"></i>Reply
-                    </button>
-                    <span><i class="far fa-clock me-1"></i>Just now</span>
+                  <div class="d-flex align-items-center text-muted small mb-2 text-end">
+                    <span>{{review.created_at}}</span>
                   </div>
+                  <button class="btn btn-sm  text-muted p-0 me-3" data-toggle="collapse" data-target="#reply-form-{{ review.id }}">
+                    Reply<i class="fas fa-reply me-1"></i>
+                  </button>
                   
                   <div id="reply-form-{{ review.id }}" class="collapse mb-3">
                     <form method="POST" action="submit_review/" class="d-flex align-items-center">
