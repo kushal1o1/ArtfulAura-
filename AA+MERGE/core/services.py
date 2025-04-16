@@ -20,7 +20,7 @@ import random
 import string
 import time
 
-def add_to_cart_service(order,item,order_item,request):
+def add_to_cart_service(order,item,order_item):
     """
     Service to add an item to the cart.
     """
@@ -117,9 +117,11 @@ def verify_signature(prev_signature,
             response_data: dict[str, str] = json.loads(response_body_json)
             print(2*"*")
             received_signature: str = response_data["signature"]
+            print(received_signature)
             print(3*"*")
             signed_field_names: str = response_data["signed_field_names"]
             field_names = signed_field_names.split(",")
+            print(response_data)
             message: str = ",".join(
                 f"{field_name}={response_data[field_name]}" for field_name in field_names
             )
@@ -128,6 +130,7 @@ def verify_signature(prev_signature,
             hmac_sha256 = hmac.new(secret, message, hashlib.sha256)
             digest = hmac_sha256.digest()
             signature = base64.b64encode(digest).decode('utf-8')
+            print(signature)
             is_valid: bool = received_signature == signature
             print(is_valid)
             return is_valid, response_data if is_valid else None
