@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView,DetailView,View
 import requests
-from .models import Item, Order, OrderItem,Address,Coupon,Payment,Refund,CATEGORY_CHOICES,Review
+from .models import Item, Order, OrderItem,Address,Coupon,Payment,Refund,CATEGORY_CHOICES,Review,LABEL_CHOICES
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -30,14 +30,18 @@ class HomeView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = CATEGORY_CHOICES
+        context["labels"] = LABEL_CHOICES
         return context
     
     def get_queryset(self):
         queryset = super().get_queryset()
-        category = self.request.GET.get('category')  
+        category = self.request.GET.get('category') 
+        label = self.request.GET.get('label') 
         search_query = self.request.GET.get('search') 
         if category:
             queryset = queryset.filter(category=category) 
+        if label:
+            queryset = queryset.filter(label=label)
         if search_query:  
             queryset = queryset.filter(title__icontains=search_query) 
         return queryset

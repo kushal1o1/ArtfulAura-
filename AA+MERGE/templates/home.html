@@ -5,7 +5,7 @@
     <div class="container">
 
       <!--Navbar-->
-      <nav class=" navbar navbar-expand-lg navbar-dark mdb-color   bg-dark mt-3 mb-5">
+      <nav class=" navbar navbar-expand-lg navbar-dark mdb-color   bg-dark mt-3 ">
 
         <!-- Navbar brand -->
         <span class="navbar-brand">Categories:</span>
@@ -31,7 +31,7 @@
             {% endfor %}
            
           </ul>
-    
+         
 
 
           <form class="form-inline" method="get" action="">
@@ -45,7 +45,17 @@
 
       </nav>
       <!--/.Navbar-->
+    <!-- labels -->
+     <nav class="navbar navbar-expand-lg  mb-5">
+    <ul class="navbar-nav  d-flex flex-row align-items-center justify-content-between"> 
+      {% for code, name in labels %}
+      <li class="nav-item ">
+        <a class="badge badge-pill {{  code}}-color m-2 p-2" href="?label={{ code }}">{{name}}</a>
+      </li>
+      {% endfor %}
 
+    </ul>
+  </nav>
       <!--Section: Products v.3-->
       <section class="text-center mb-4">
 
