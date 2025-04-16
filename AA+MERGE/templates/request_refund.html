@@ -1,26 +1,31 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
-
+{% load static %}
 {% block content %}
   <main>
-
       <div class="container-fluid">
-        {% if orders%} 
+        {% if orders %}
         <h1 class="my-5 h2 text-center">Your Previous Orders</h1>
-        <div class="table-responsive text-nowrap col-md-8  container ">
+        <div class="table-responsive text-nowrap col-md-8 mx-auto">
           {% for object in orders %}
-          <h1 class="text-center mb-4 h3 ">Order {{ forloop.counter}}</h1>
-          <table class="table  container-fluid">
-              <tbody class="card-body">
+          <h2 class="text-center mb-4">Order {{ forloop.counter }}</h2>
+          <table class="table table-bordered table-hover">
+              <thead>
+                  <tr>
+                      <th>Image</th>
+                      <th>Title</th>
+                      <th>Price</th>
+                      <th>Quantity</th>
+                      <th>Total</th>
+                  </tr>
+              </thead>
+              <tbody>
               {% for order_item in object.items.all %}
               <tr>
-                  <td><img src="{{ order_item.item.image.url }}" class="card-img-top" style="height:50px;width:50px"></td>
+                  <td><img src="{{ order_item.item.image.url }}" class="img-fluid" style="height:50px;width:50px"></td>
                   <td>{{ order_item.item.title }}</td>
-                  <td>{{ order_item.item.price }}</td>
-                  <td>
-                    
-                      {{ order_item.quantity }}
-                  </td>
+                  <td>${{ order_item.item.price }}</td>
+                  <td>{{ order_item.quantity }}</td>
                   <td>
                   {% if order_item.item.discount_price %}
                       ${{ order_item.get_total_discount_item_price }}
@@ -28,79 +33,72 @@
                   {% else %}
                       ${{ order_item.get_total_item_price }}
                   {% endif %}
-                
                   </td>
               </tr>
               {% empty %}
               <tr>
-                  <td colspan='5'>Your cart was empty</td>
+                  <td colspan='5' class="text-center">Your cart was empty</td>
               </tr>
               {% endfor %}
-            {% if object.coupon %}
+              {% if object.coupon %}
               <tr>
-                  <td colspan="4"><b>Coupon</b></td>
-                  <td>
-                      <b>{{ object.coupon.percentage }}% OFF {{object.get_actual_total}}</b>
-                  </td>
+                  <td colspan="4"><strong>Coupon</strong></td>
+                  <td><strong>{{ object.coupon.percentage }}% OFF ${{ object.get_actual_total }}</strong></td>
               </tr>
               <tr>
                   <td colspan="4">Coupon Amount</td>
-                  <td >-${{object.get_coupon_amount}}</td>
+                  <td>-${{ object.get_coupon_amount }}</td>
               </tr>
-      
-              {% endif %} 
+              {% endif %}
               {% if object.get_total %}
               <tr>
-                  <td colspan="4"><b>Order Total</b></td>
-                  <td><b>${{ object.get_total }}</b></td>
+                  <td colspan="4"><strong>Order Total</strong></td>
+                  <td><strong>${{ object.get_total }}</strong></td>
               </tr>
               {% endif %}
               {% if object.ref_code %}
               <tr>
-                  <td colspan="4"><b>Reference Code</b></td>
-                  <td><b>{{ object.ref_code }}</b></td>
+                  <td colspan="4"><strong>Reference Code</strong></td>
+                  <td><strong>{{ object.ref_code }}</strong></td>
               </tr>
               {% endif %}
-
               </tbody>
           </table>
           <br>
-          <br>
           {% endfor %}
-          
-        </div>   
-    
-        <div class="container card">
-          <h2 class="text-center">Request Refund</h2>
+        </div>
+
+        <div class=" my-5 container d-flex align-items-center justify-content-center">
+          <div class="col-md-4 d-flex justify-content-center align-items-center">
+            <img src="{% static 'svgs/refund.svg' %}" alt="Refund Illustration" class="img-fluid">
+          </div>
+          <div class="col-md-8">
+            <div class="card">
+              <h2 class="text-center">Request Refund</h2>
               <form method="POST" class="card-body">
-                  {% csrf_token %}
-                  <div class="md-form mb-5">
-                    {{form.ref_code}}
-                    <label for="shipping_address" class="">Reference Code</label>
-                  </div>
-                  <div class="md-form mb-5">
-                    {{form.message}}
-                    <label for="shipping_address" class="">Message</label>
-                  </div>
-                  <div class="md-form mb-5">
-                    {{form.email}}
-                    <label for="shipping_address" class="">Email</label>
-                  </div>
-                  <button type='submit' class='btn btn-primary'>Submit</button>
-                </form>
+                {% csrf_token %}
+                <div class="form-group">
+                  {{ form.ref_code }}
+                  <label for="ref_code">Reference Code</label>
+                </div>
+                <div class="form-group">
+                  {{ form.message }}
+                  <label for="message">Message</label>
+                </div>
+                <div class="form-group">
+                  {{ form.email }}
+                  <label for="email">Email</label>
+                </div>
+                <button type='submit' class='btn btn-primary btn-block'>Submit</button>
+              </form>
+            </div>
+          </div>
         </div>
         {% else %}
-       <p class="h2 text-center"> You dont have any previous orders</p>
-      {% endif%}
-
-
-        </div>
-
-
-   
-
+        <p class="h2 text-center">You don't have any previous orders</p>
+        {% endif %}
+      </div>
   </main>
-
 {% endblock content %}
 
 
