@@ -65,3 +65,8 @@ done= False
 # TODO: Send a email for the order confirmation and payment confirmation 
 
 done= False
+
+
+# TODO: Add new social login either mail,google or facebook
+done= False
+
