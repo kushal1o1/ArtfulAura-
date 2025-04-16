@@ -40,7 +40,7 @@
               <i class="far fa-star text-warning"></i>
           {% endif %}
       {% endfor %}
-                        <span>({{review_count}} Reviews)</span>
+                        <span>({{review_count}}  Reviews)</span>
                     </div>
                     {% else%}
                     {% for i in 5|times%}
@@ -93,9 +93,7 @@
 
           <h4 class="my-4 h4">Additional information</h4>
 
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus suscipit modi sapiente illo soluta odit
-            voluptates,
-            quibusdam officia. Neque quibusdam quas a quis porro? Molestias illo neque eum in laborum.</p>
+          <p>{{object.Additional_information}}</p>
 
         </div>
         <!--Grid column-->
@@ -108,90 +106,198 @@
     </div>
   </main>
   <hr>
-  <div class="container">
-    <div class="col-lg-8 container">
-        <h4 class="fw-bold">Leave a Review</h4>
-        <form id="reviewForm" method="POST" action="submit_review/">
-          {% csrf_token %}
-            <div class="mb-3">
-                <label for="reviewText" class="form-label">Your Review</label>
-                <textarea class="form-control" id="reviewText" rows="4" placeholder="Write your review" name="message" required></textarea>
-            </div>
-            <div class="mb-3">
-              <label for="reviewRating" class="form-label">Rating</label>
-              <div class="star-rating">
-                  <!-- Display 5 stars with empty state initially -->
-                  {% for i in 5|times %}
-                      <span class="star far fa-star text-warning " data-value="{{ i }}" onclick="selectRating({{ i }})"></span>
-                  {% endfor %}
+  <div class="container py-4">
+    <div class="row">
+      <!-- Left side with SVG and title -->
+      <div class="col-lg-4 col-md-5 mb-4 text-center text-md-start">
+        <div class="sticky-top pt-3">
+          {% load static %}
+          <img src="{% static 'svgs/review.svg' %}" alt="Review" class="img-fluid mb-3" style="max-width: 150px;">
+          <h4 class="fw-bold text-dark mb-3">Share Your Experience</h4>
+          
+          <!-- Review form -->
+          <form id="reviewForm" method="POST" action="submit_review/" class="mb-4">
+            {% csrf_token %}
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="reviewRating" class="form-label fw-semibold">Rating</label>
+                  <div class="star-rating fs-4 mb-2">
+                    {% for i in 5|times %}
+                      <span class="star far fa-star text-warning me-1" data-value="{{ i }}" onclick="selectRating({{ i }})"></span>
+                    {% endfor %}
+                  </div>
+                  <input type="hidden" id="reviewRating" name="rating" value="0" required>
+                </div>
+                <div class="mb-3">
+                  <textarea class="form-control border-0 bg-light" id="reviewText" rows="3" placeholder="Write your review..." name="message" required></textarea>
+                </div>
+                <div class="text-end">
+                  <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-paper-plane me-2"></i>Post
+                  </button>
+                </div>
               </div>
-              <!-- Hidden input to store the rating value -->
-              <input type="hidden" id="reviewRating" name="rating" value="0" required>
-          </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Right side with reviews -->
+      <div class="col-lg-8 col-md-7">
+        <div class="d-flex align-items-center mb-3">
           
-          <script>
-              // Function to handle star click and update the rating
-              function selectRating(rating) {
-                  // Update the hidden input with the selected rating value
-                  document.getElementById('reviewRating').value = rating+1;
+          <h5 class="mb-0 text-muted">
+            <div class="ms-auto">
+              <span class="badge bg-primary rounded-pill" id="review-count">
+                {% if reviews %}{{ reviews|length }}{% else %}0{% endif %}
+              </span> Reviews
+            </div>
+           
+          </h5>
           
-                  // Select all star elements
-                  const stars = document.querySelectorAll('.star-rating .star');
-          
-                  // Loop over each star and add or remove the 'selected' class based on rating
-                  stars.forEach((star, index) => {
-                      if (index <= rating) {
-                          star.classList.add('fas');
-                      } else {
-                          star.classList.remove('fas');  // Remove highlight for stars above the rating
-                      }
-                  });
-              }
-          </script>
-
-            <button type="submit" class="btn btn-primary">Submit Review</button>
-        </form>
-        <h3>Reviews</h3>
-        <ul class="list-group container">
+        </div>
+        
+        <!-- Scrollable review container -->
+        <div class="review-container overflow-auto" style="max-height: 600px; scrollbar-width: thin;">
+          {% if reviews %}
             {% for review in reviews %}
-                <li class="list-group-item">
-                    <strong>@{{ review.user.username }}</strong>
+              <div class="d-flex mb-4">
+                <!-- User avatar circle -->
+                <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px; flex-shrink: 0;">
+                  <i class="fas fa-user"></i>
+                </div>
+                
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold">@{{ review.user.username }}</span>
                     <div class="stars">
                       {% for i in 5|times %}
-                      <span class=" fa-star text-warning {% if i < review.rating %} fas{% else%} far{% endif %}"></span>
-
+                        <span class="fa-star text-warning {% if i < review.rating %} fas{% else %} far{% endif %}"></span>
                       {% endfor %}
-                  </div>
-                    <p>{{ review.message }}</p>
-                    <button class="btn btn-link" data-toggle="collapse" data-target="#reply-form-{{ review.id }}">Reply</button>
-                    
-                    <div id="reply-form-{{ review.id }}" class="collapse">
-                        <form method="POST"  method="POST" action="submit_review/">
-                            {% csrf_token %}
-                            <input type="hidden" name="parent_review" value="{{ review.id }}">
-                            {{ form.message.label }} <br>
-                            <textarea name="message" class="form-control" placeholder="Your reply..." required></textarea>
-                            <button type="submit" class="btn btn-primary">Submit Reply</button>
-                        </form>
                     </div>
-                    {% if review.replies.all%}
-                    <ul class="container ">
-
-                        {% for reply in review.replies.all %}
-                            <li class="list-group-item  card-body text-start">
-                                <strong>@{{ reply.user.username }}</strong>
-                                <p>{{ reply.message }}</p>
-                                
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
-                </li>
+                  </div>
+                  
+                  <p class="mb-2">{{ review.message }}</p>
+                  
+                  <div class="d-flex align-items-center text-muted small mb-2 text-end">
+                    <span>{{review.created_at}}</span>
+                  </div>
+                  <button class="btn btn-sm  text-muted p-0 me-3" data-toggle="collapse" data-target="#reply-form-{{ review.id }}">
+                    Reply<i class="fas fa-reply me-1"></i>
+                  </button>
+                  
+                  <div id="reply-form-{{ review.id }}" class="collapse mb-3">
+                    <form method="POST" action="submit_review/" class="d-flex align-items-center">
+                      {% csrf_token %}
+                      <input type="hidden" name="parent_review" value="{{ review.id }}">
+                      <input type="text" name="message" class="form-control form-control-sm rounded-pill me-2" placeholder="Write a reply..." required>
+                      <button type="submit" class="btn btn-sm btn-primary rounded-circle d-flex justify-content-center align-items-center" style="width: 32px; height: 32px;">
+                        <i class="fas fa-paper-plane"></i>
+                      </button>
+                    </form>
+                  </div>
+                  
+                  {% if review.replies.all %}
+                    <div class="replies ps-3 border-start">
+                      {% for reply in review.replies.all %}
+                        <div class="d-flex mb-2">
+                          <div class="rounded-circle bg-light d-flex justify-content-center align-items-center me-2" style="width: 30px; height: 30px; flex-shrink: 0;">
+                            <i class="fas fa-user-circle text-secondary"></i>
+                          </div>
+                          <div>
+                            <span class="fw-bold small">@{{ reply.user.username }}</span>
+                            <p class="mb-1 small">{{ reply.message }}</p>
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              <hr class="text-muted">
             {% endfor %}
-        </ul>
+          {% else %}
+            <div class="text-center py-5 text-muted">
+              <i class="fas fa-comment-slash fa-3x mb-3"></i>
+              <p>No reviews yet. Be the first to share your experience!</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
     </div>
-</div>
-
+  </div>
+  
+  <style>
+    /* Custom scrollbar styles */
+    .review-container::-webkit-scrollbar {
+      width: 5px;
+    }
+    
+    .review-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    .review-container::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 10px;
+    }
+    
+    .review-container::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 767.98px) {
+      .review-container {
+        max-height: 400px;
+      }
+    }
+  </style>
+  
+  <script>
+    // Function to handle star click and update the rating
+    function selectRating(rating) {
+      // Update the hidden input with the selected rating value
+      document.getElementById('reviewRating').value = rating+1;
+      
+      // Select all star elements
+      const stars = document.querySelectorAll('.star-rating .star');
+      
+      // Loop over each star and add or remove the classes based on rating
+      stars.forEach((star, index) => {
+        if (index <= rating) {
+          star.classList.remove('far');
+          star.classList.add('fas');
+        } else {
+          star.classList.remove('fas');
+          star.classList.add('far');
+        }
+      });
+    }
+  </script>
+  <script>
+    // Function to handle star click and update the rating
+    function selectRating(rating) {
+      // Update the hidden input with the selected rating value
+      document.getElementById('reviewRating').value = rating+1;
+      
+      // Select all star elements
+      const stars = document.querySelectorAll('.star-rating .star');
+      
+      // Loop over each star and add or remove the 'selected' class based on rating
+      stars.forEach((star, index) => {
+        if (index <= rating) {
+          star.classList.remove('far');
+          star.classList.add('fas');
+        } else {
+          star.classList.remove('fas');
+          star.classList.add('far');
+        }
+      });
+    }
+  </script>
 
 
 {% comment %} TRY {% endcomment %}

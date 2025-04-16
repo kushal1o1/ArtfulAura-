@@ -1,106 +1,157 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
-
+{% load static %}
 {% block content %}
   <main>
-
       <div class="container-fluid">
-        {% if orders%} 
+        {% if orders %}
         <h1 class="my-5 h2 text-center">Your Previous Orders</h1>
-        <div class="table-responsive text-nowrap col-md-8  container ">
+        <div class="table-responsive text-nowrap col-md-8 mx-auto">
           {% for object in orders %}
-          <h1 class="text-center mb-4 h3 ">Order {{ forloop.counter}}</h1>
-          <table class="table  container-fluid">
-              <tbody class="card-body">
-              {% for order_item in object.items.all %}
-              <tr>
-                  <td><img src="{{ order_item.item.image.url }}" class="card-img-top" style="height:50px;width:50px"></td>
+          <h2 class="text-center mb-4">Order {{ forloop.counter }}</h2>
+          <div class="table-responsive my-4">
+            <table class="table table-bordered table-hover align-middle text-center">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Image</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Quantity</th>
+                  <th scope="col">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order_item in object.items.all %}
+                <tr>
+                  <td>
+                    <img src="{{ order_item.item.image.url }}" class="img-thumbnail" style="height:50px; width:50px;" alt="Item Image">
+                  </td>
                   <td>{{ order_item.item.title }}</td>
-                  <td>{{ order_item.item.price }}</td>
+                  <td>${{ order_item.item.price }}</td>
+                  <td>{{ order_item.quantity }}</td>
                   <td>
-                    
-                      {{ order_item.quantity }}
-                  </td>
-                  <td>
-                  {% if order_item.item.discount_price %}
-                      ${{ order_item.get_total_discount_item_price }}
-                      <span class="badge badge-primary">Saved ${{ order_item.get_amount_saved }}</span>
-                  {% else %}
+                    {% if order_item.item.discount_price %}
+                      ${{ order_item.get_total_discount_item_price }}<br>
+                      <span class="badge bg-success mt-1">Saved ${{ order_item.get_amount_saved }}</span>
+                    {% else %}
                       ${{ order_item.get_total_item_price }}
-                  {% endif %}
-                
+                    {% endif %}
                   </td>
-              </tr>
-              {% empty %}
-              <tr>
-                  <td colspan='5'>Your cart was empty</td>
-              </tr>
-              {% endfor %}
-            {% if object.coupon %}
-              <tr>
-                  <td colspan="4"><b>Coupon</b></td>
-                  <td>
-                      <b>{{ object.coupon.percentage }}% OFF {{object.get_actual_total}}</b>
-                  </td>
-              </tr>
-              <tr>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-muted">Your cart was empty</td>
+                </tr>
+                {% endfor %}
+          
+                {% if object.coupon %}
+                <tr class="table-warning">
+                  <td colspan="4"><strong>Coupon</strong></td>
+                  <td><strong>{{ object.coupon.percentage }}% OFF ${{ object.get_actual_total }}</strong></td>
+                </tr>
+                <tr class="table-warning">
                   <td colspan="4">Coupon Amount</td>
-                  <td >-${{object.get_coupon_amount}}</td>
-              </tr>
-      
-              {% endif %} 
-              {% if object.get_total %}
-              <tr>
-                  <td colspan="4"><b>Order Total</b></td>
-                  <td><b>${{ object.get_total }}</b></td>
-              </tr>
-              {% endif %}
-              {% if object.ref_code %}
-              <tr>
-                  <td colspan="4"><b>Reference Code</b></td>
-                  <td><b>{{ object.ref_code }}</b></td>
-              </tr>
-              {% endif %}
-
+                  <td>-${{ object.get_coupon_amount }}</td>
+                </tr>
+                {% endif %}
+          
+                {% if object.get_total %}
+                <tr class="table-info">
+                  <td colspan="4"><strong>Order Total</strong></td>
+                  <td><strong>${{ object.get_total }}</strong></td>
+                </tr>
+                {% endif %}
+          
+                {% if object.ref_code %}
+                <tr class="table-light">
+                  <td colspan="4"><strong>Reference Code</strong></td>
+                  <td>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <code id="refCode">{{ object.ref_code }}</code>
+                      <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyRefCode(this)">
+                        <i class="fas fa-copy me-1"></i> Copy
+                      </button>
+                    </div>
+                    <div id="copyAlert" class="text-success small mt-1" style="display: none;">
+                      ✅ Copied to clipboard!
+                    </div>
+                  </td>
+                </tr>
+                
+                {% endif %}
               </tbody>
-          </table>
-          <br>
+            </table>
+          </div>
+          
           <br>
           {% endfor %}
-          
-        </div>   
-    
-        <div class="container card">
-          <h2 class="text-center">Request Refund</h2>
-              <form method="POST" class="card-body">
-                  {% csrf_token %}
-                  <div class="md-form mb-5">
-                    {{form.ref_code}}
-                    <label for="shipping_address" class="">Reference Code</label>
-                  </div>
-                  <div class="md-form mb-5">
-                    {{form.message}}
-                    <label for="shipping_address" class="">Message</label>
-                  </div>
-                  <div class="md-form mb-5">
-                    {{form.email}}
-                    <label for="shipping_address" class="">Email</label>
-                  </div>
-                  <button type='submit' class='btn btn-primary'>Submit</button>
-                </form>
         </div>
+
+        <div class="container my-5">
+          <div class="row justify-content-center align-items-center g-4">
+            <!-- Image Section -->
+            <div class="col-12 col-md-5 text-center">
+              <img src="{% static 'svgs/refund.svg' %}" alt="Refund Illustration" class="img-fluid rounded" style="max-height: 280px;">
+            </div>
+        
+            <!-- Form Section -->
+            <div class="col-12 col-md-7">
+              <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-body p-4">
+                  <h2 class="text-center mb-4">Request Refund</h2>
+                  <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                      <label for="ref_code" class="form-label">Reference Code</label>
+                      {{ form.ref_code }}
+                    </div>
+                    <div class="mb-3">
+                      <label for="message" class="form-label">Message</label>
+                      {{ form.message }}
+                    </div>
+                    <div class="mb-4">
+                      <label for="email" class="form-label">Email</label>
+                      {{ form.email }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Submit</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         {% else %}
-       <p class="h2 text-center"> You dont have any previous orders</p>
-      {% endif%}
-
-
-        </div>
-
-
-   
-
+        <p class="h2 text-center">You don't have any previous orders</p>
+        {% endif %}
+      </div>
   </main>
-
+  <script>
+    function copyRefCode(button) {
+      const codeText = document.getElementById('refCode').textContent;
+      navigator.clipboard.writeText(codeText).then(() => {
+        // Change button text/icon
+        button.innerHTML = '<i class="fas fa-check me-1"></i> Copied';
+  
+        // Show copied message
+        const alert = document.getElementById('copyAlert');
+        alert.style.display = 'block';
+  
+        // Reset after a short delay
+        setTimeout(() => {
+          button.innerHTML = '<i class="fas fa-copy me-1"></i> Copy';
+          alert.style.display = 'none';
+        }, 1500);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+  </script>
 {% endblock content %}
+
+
+
+  
+
 
 

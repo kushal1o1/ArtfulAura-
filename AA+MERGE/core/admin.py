@@ -55,6 +55,8 @@ class AddressAdmin(admin.ModelAdmin):
 class ItemAdmin(admin.ModelAdmin):
     list_display = ('image_tag','title', 'price', 'discount_price', 'category', 'label', 'slug', 'Additional_information')
     readonly_fields = ['image_tag']  
+    writable_fields = ['label']  # Make image field writable in the admin panel
+    list_filter = ('category', 'label')  # Filter items by category and label
 
     def image_tag(self, obj):
         if obj.image:

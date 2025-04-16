@@ -18,10 +18,13 @@ CATEGORY_CHOICES = (
 
 
 LABEL_CHOICES = (
-    ('P', 'primary'),
-    ('S', 'secondary'),
-    ('D', 'danger')
+    ('primary', 'New'),
+    ('secondary', 'Featured'),
+    ('danger', 'Limited'),
+    ('warning', 'Hot'),
+    ('info', 'Exclusive'),
 )
+
 
 
 
@@ -31,12 +34,13 @@ class Item(models.Model):
     price = models.FloatField()
     discount_price = models.FloatField(blank=True, null=True)
     category = models.CharField(choices=CATEGORY_CHOICES, max_length=2)
-    label = models.CharField(choices=LABEL_CHOICES, max_length=1)
+    label = models.CharField(choices=LABEL_CHOICES,max_length=30, default='primary')
     slug = models.SlugField()
     description = models.TextField()
     image = models.ImageField()
     Additional_information=models.CharField(max_length=100,null=True,blank=True)
-
+    # stock=models.IntegerField(default=0)
+    
     def __str__(self):
         return self.title
     def get_absolute_url(self):
