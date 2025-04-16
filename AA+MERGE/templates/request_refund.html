@@ -9,96 +9,149 @@
         <div class="table-responsive text-nowrap col-md-8 mx-auto">
           {% for object in orders %}
           <h2 class="text-center mb-4">Order {{ forloop.counter }}</h2>
-          <table class="table table-bordered table-hover">
-              <thead>
-                  <tr>
-                      <th>Image</th>
-                      <th>Title</th>
-                      <th>Price</th>
-                      <th>Quantity</th>
-                      <th>Total</th>
-                  </tr>
+          <div class="table-responsive my-4">
+            <table class="table table-bordered table-hover align-middle text-center">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Image</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Quantity</th>
+                  <th scope="col">Total</th>
+                </tr>
               </thead>
               <tbody>
-              {% for order_item in object.items.all %}
-              <tr>
-                  <td><img src="{{ order_item.item.image.url }}" class="img-fluid" style="height:50px;width:50px"></td>
+                {% for order_item in object.items.all %}
+                <tr>
+                  <td>
+                    <img src="{{ order_item.item.image.url }}" class="img-thumbnail" style="height:50px; width:50px;" alt="Item Image">
+                  </td>
                   <td>{{ order_item.item.title }}</td>
                   <td>${{ order_item.item.price }}</td>
                   <td>{{ order_item.quantity }}</td>
                   <td>
-                  {% if order_item.item.discount_price %}
-                      ${{ order_item.get_total_discount_item_price }}
-                      <span class="badge badge-primary">Saved ${{ order_item.get_amount_saved }}</span>
-                  {% else %}
+                    {% if order_item.item.discount_price %}
+                      ${{ order_item.get_total_discount_item_price }}<br>
+                      <span class="badge bg-success mt-1">Saved ${{ order_item.get_amount_saved }}</span>
+                    {% else %}
                       ${{ order_item.get_total_item_price }}
-                  {% endif %}
+                    {% endif %}
                   </td>
-              </tr>
-              {% empty %}
-              <tr>
-                  <td colspan='5' class="text-center">Your cart was empty</td>
-              </tr>
-              {% endfor %}
-              {% if object.coupon %}
-              <tr>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-muted">Your cart was empty</td>
+                </tr>
+                {% endfor %}
+          
+                {% if object.coupon %}
+                <tr class="table-warning">
                   <td colspan="4"><strong>Coupon</strong></td>
                   <td><strong>{{ object.coupon.percentage }}% OFF ${{ object.get_actual_total }}</strong></td>
-              </tr>
-              <tr>
+                </tr>
+                <tr class="table-warning">
                   <td colspan="4">Coupon Amount</td>
                   <td>-${{ object.get_coupon_amount }}</td>
-              </tr>
-              {% endif %}
-              {% if object.get_total %}
-              <tr>
+                </tr>
+                {% endif %}
+          
+                {% if object.get_total %}
+                <tr class="table-info">
                   <td colspan="4"><strong>Order Total</strong></td>
                   <td><strong>${{ object.get_total }}</strong></td>
-              </tr>
-              {% endif %}
-              {% if object.ref_code %}
-              <tr>
+                </tr>
+                {% endif %}
+          
+                {% if object.ref_code %}
+                <tr class="table-light">
                   <td colspan="4"><strong>Reference Code</strong></td>
-                  <td><strong>{{ object.ref_code }}</strong></td>
-              </tr>
-              {% endif %}
+                  <td>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <code id="refCode">{{ object.ref_code }}</code>
+                      <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyRefCode(this)">
+                        <i class="fas fa-copy me-1"></i> Copy
+                      </button>
+                    </div>
+                    <div id="copyAlert" class="text-success small mt-1" style="display: none;">
+                      ✅ Copied to clipboard!
+                    </div>
+                  </td>
+                </tr>
+                
+                {% endif %}
               </tbody>
-          </table>
+            </table>
+          </div>
+          
           <br>
           {% endfor %}
         </div>
 
-        <div class=" my-5 container d-flex align-items-center justify-content-center">
-          <div class="col-md-4 d-flex justify-content-center align-items-center">
-            <img src="{% static 'svgs/refund.svg' %}" alt="Refund Illustration" class="img-fluid">
-          </div>
-          <div class="col-md-8">
-            <div class="card">
-              <h2 class="text-center">Request Refund</h2>
-              <form method="POST" class="card-body">
-                {% csrf_token %}
-                <div class="form-group">
-                  {{ form.ref_code }}
-                  <label for="ref_code">Reference Code</label>
+        <div class="container my-5">
+          <div class="row justify-content-center align-items-center g-4">
+            <!-- Image Section -->
+            <div class="col-12 col-md-5 text-center">
+              <img src="{% static 'svgs/refund.svg' %}" alt="Refund Illustration" class="img-fluid rounded" style="max-height: 280px;">
+            </div>
+        
+            <!-- Form Section -->
+            <div class="col-12 col-md-7">
+              <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-body p-4">
+                  <h2 class="text-center mb-4">Request Refund</h2>
+                  <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                      <label for="ref_code" class="form-label">Reference Code</label>
+                      {{ form.ref_code }}
+                    </div>
+                    <div class="mb-3">
+                      <label for="message" class="form-label">Message</label>
+                      {{ form.message }}
+                    </div>
+                    <div class="mb-4">
+                      <label for="email" class="form-label">Email</label>
+                      {{ form.email }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Submit</button>
+                  </form>
                 </div>
-                <div class="form-group">
-                  {{ form.message }}
-                  <label for="message">Message</label>
-                </div>
-                <div class="form-group">
-                  {{ form.email }}
-                  <label for="email">Email</label>
-                </div>
-                <button type='submit' class='btn btn-primary btn-block'>Submit</button>
-              </form>
+              </div>
             </div>
           </div>
         </div>
+        
         {% else %}
         <p class="h2 text-center">You don't have any previous orders</p>
         {% endif %}
       </div>
   </main>
+  <script>
+    function copyRefCode(button) {
+      const codeText = document.getElementById('refCode').textContent;
+      navigator.clipboard.writeText(codeText).then(() => {
+        // Change button text/icon
+        button.innerHTML = '<i class="fas fa-check me-1"></i> Copied';
+  
+        // Show copied message
+        const alert = document.getElementById('copyAlert');
+        alert.style.display = 'block';
+  
+        // Reset after a short delay
+        setTimeout(() => {
+          button.innerHTML = '<i class="fas fa-copy me-1"></i> Copy';
+          alert.style.display = 'none';
+        }, 1500);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+  </script>
 {% endblock content %}
+
+
+
+  
+
 
 
