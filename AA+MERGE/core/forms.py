@@ -4,8 +4,8 @@ from django_countries.widgets import CountrySelectWidget
 from .models import  Review
 
 PAYMENT_CHOICES = (
-    ('E', 'Esewa'),
-    ('K', 'Khalti')
+    ('E', 'Esewa', 'images/esewa.png'),
+    ('K', 'Khalti', 'images/khalti.png')
 )
 
 class CheckoutForm(forms.Form):
@@ -34,7 +34,12 @@ class CheckoutForm(forms.Form):
                 'id': 'phone_number',
                 'class': 'form-control',
             }))
-    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Convert 3-item tuples to 2-item tuples for Django's validation
+        self.fields['payment_option'].choices = [(value, name) for value, name, _ in PAYMENT_CHOICES]
+        # Store the original choices with images for the template
+        self.payment_choices_with_images = PAYMENT_CHOICES
 
     
 

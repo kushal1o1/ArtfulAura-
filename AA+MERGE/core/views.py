@@ -165,6 +165,7 @@ class CheckoutView(LoginRequiredMixin,View):
                 'couponform': CouponForm(),
                 'order': order,
                 'DISPLAY_COUPON_FORM': True,
+                "payment_choices": form.payment_choices_with_images,
 
             }
             shipping_address_qs = Address.objects.filter(
