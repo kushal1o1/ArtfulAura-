@@ -5,7 +5,7 @@ from .models import  Review
 
 PAYMENT_CHOICES = (
     ('E', 'Esewa', 'images/esewa.png'),
-    ('K', 'Khalti', 'images/khalti.png')
+    ('K', 'Khalti', 'images/khalti.png'),
     ('S','Stripe','images/stripe.png')
 )
 

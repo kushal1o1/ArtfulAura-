@@ -272,6 +272,8 @@ class CheckoutView(LoginRequiredMixin,View):
                     return redirect('core:payment', payment_option='esewa')
                 elif payment_option == 'K':
                     return redirect('core:payment', payment_option='kalti')
+                elif payment_option == "S":
+                    return redirect('core:payment', payment_option='stripe')
                 else:
                     messages.warning(
                         self.request, "Invalid payment option selected")
