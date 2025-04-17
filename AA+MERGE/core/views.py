@@ -20,7 +20,10 @@ import random
 import string
 import time
 from .services import add_to_cart_service,remove_from_cart_service,remove_single_item_from_cart_service,generate_transaction_uuid,generate_signature,create_ref_code,is_valid_form,handle_esewa_payment,get_esewa_status,handle_order_complete,handle_refund_request,verify_signature
+import stripe
+from django.http import JsonResponse
 
+# import jsonify
 # Create your views here.
 class HomeView(ListView):
     model = Item
@@ -331,7 +334,7 @@ class PaymentView(LoginRequiredMixin,View):
             return render(self.request, "payment.html",context={'order':order,"method":"khalti"})
         
         elif kwargs["payment_option"]=="stripe":
-            return render(self.request, "payment.html",context={'order':order,"method":"stripe"})
+            return render(self.request, "payment.html",context={'order':order,"method":"stripe","STRIPE_PUBLISHABLE_KEY":config("STRIPE_PUBLISHABLE_KEY")})
             
         else:
             messages.warning(self.request, "Invalid payment option selected")
@@ -501,3 +504,56 @@ def submit_review(request, slug):
             )
             
         return redirect(request.META.get('HTTP_REFERER', '/'))
+    
+def calculate_order_amount(items):
+    # Replace this constant with a calculation of the order's amount
+    # Calculate the order total on the server to prevent
+    # people from directly manipulating the amount on the client
+    return 1400
+    
+def initiate_stripe(request):
+    order = Order.objects.get(user=request.user, ordered=False)
+    print("here lol")
+    # try:
+    #     checkout_session = stripe.checkout.Session.create(
+    #         line_items=[
+    #             {
+    #                 'price': "price_1234",
+    #                 'quantity': 1,
+    #             },
+    #         ],
+    #         mode='payment',
+    #         success_url='http://127.0.0.1:8000/payment-sucess',
+    #         cancel_url="http://127.0.0.1:8000/payment-cancel",
+    #     )
+    # except Exception as e:
+    #     return str(e)
+    stripe.api_key=config("STRIPE_API_KEY")
+    try:
+        print("inside try")
+        data = json.loads(request.body)
+        print("Received data:", data)
+        print("inside getting data")
+        # Create a PaymentIntent with the order amount and currency
+        intent = stripe.PaymentIntent.create(
+            amount=calculate_order_amount(data['items']),
+            currency='usd',
+            # In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+            automatic_payment_methods={
+                'enabled': True,
+            },
+        )
+        print(intent["client_secret"])
+        return JsonResponse({
+            'clientSecret': intent['client_secret']
+        })
+    except Exception as e:
+        print("inside except")
+        return JsonResponse({'error': str(e)})
+
+    # from django.http import JsonResponse
+    # return JsonResponse({'clientSecret': session.client_secret})
+    
+def sucess_page(request):
+    messages.success(request, "Your order was successful!")
+    return redirect("core:home")

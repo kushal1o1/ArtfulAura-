@@ -35,6 +35,10 @@ urlpatterns = [
     path('verify-esewa/',views.verify_esewa,name="verify-esewa"),
     path('request-refund/', RequestRefundView.as_view(), name='request-refund'),
     path('product/<slug>/submit_review/', submit_review, name='submit_review'),
+    path("stripe_initiate/",views.initiate_stripe,name="stripe_initiate"),
+    path("payment-sucess/",views.sucess_page,name="sucess_page"),
+    path("payment-cancel/",views.sucess_page,name="sucess_page"),
+    
     
     
 ]
