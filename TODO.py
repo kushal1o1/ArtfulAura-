@@ -71,7 +71,7 @@ done= False
 done= False
 
 #TODO:add stripe for learning other payment integrations
-done=False
+done=True
 
 # TODO:add a currency converter for the payment gateways or somehow handle the inconsistencies
 
