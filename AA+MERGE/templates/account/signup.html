@@ -5,20 +5,38 @@
 {% block head_title %}{% trans "Signup" %}{% endblock %}
 
 {% block content %}
-  <main>
+  <main class="py-5">
     <div class="container">
       <section class="mb-4">
-        <div class="row wow fadeIn">
-          <div class='col-6 offset-3'>
-            <h1>{% trans "Sign Up" %}</h1>
-            <p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
+        <div class="row justify-content-center">
+          <div class=" bg-white rounded ">
+            
+            <!-- Logo Section -->
+            <div class="text-center mb-4">
+              {% load static%}
+              <img src="{% static 'images/logo.png' %}" alt="Logo" class="img-fluid" style="max-height: 60px;">
+            </div>
+            
+            <h1 class="text-center mb-3">{% trans "Sign Up" %}</h1>
+            <p class="text-center mb-4">{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}" class="text-primary">sign in</a>.{% endblocktrans %}</p>
+
+            <!-- Signup Form -->
             <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
               {% csrf_token %}
-              {{ form|crispy }}
+              
+              <!-- Render form fields with crispy-forms -->
+              <div class="form-group">
+                {{ form|crispy }}
+              </div>
+
               {% if redirect_field_value %}
-              <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
               {% endif %}
-              <button class='btn btn-primary' type="submit">{% trans "Sign Up" %} &raquo;</button>
+
+              <!-- Submit button -->
+              <button class="btn btn-primary w-100 py-2" type="submit">
+                {% trans "Sign Up" %} &raquo;
+              </button>
             </form>
           </div>
         </div>

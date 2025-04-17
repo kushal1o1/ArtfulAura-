@@ -5,7 +5,25 @@
 {% block head_title %}{% trans "Social Network Login Failure" %}{% endblock %}
 
 {% block content %}
-<h1>{% trans "Social Network Login Failure" %}</h1>
+<main class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6 text-center">
+        <div class="p-4 rounded-4 border">
 
-<p>{% trans "An error occurred while attempting to login via your social network account." %}</p>
+          <h2 class="mb-4">{% trans "Social Network Login Failure" %}</h2>
+
+          <p class="text-muted mb-3">
+            {% trans "An error occurred while attempting to login via your social network account." %}
+          </p>
+
+          <p class="text-muted">
+            {% trans "Please try again later or contact support if the issue persists." %}
+          </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
 {% endblock %}

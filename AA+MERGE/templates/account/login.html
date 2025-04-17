@@ -2,6 +2,7 @@
 {% load i18n %}
 {% load account socialaccount %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block head_title %}{% trans "Sign In" %}{% endblock %}
 
@@ -9,47 +10,120 @@
   <main>
     <div class="container">
       <section class="mb-4">
-        <div class="row wow fadeIn">
-          <div class='col-6 offset-3'>
-          <h1>{% trans "Sign In" %}</h1>
+        <div class="row justify-content-center">
+          <div class="col-md-6 col-lg-4">
+            <div class="text-center">
+              <!-- Logo Section -->
+              <img src="{% static 'images/logo.png' %}" alt="Site Logo" class="mb-4 logo" width="120">
 
-          {% get_providers as socialaccount_providers %}
+              <h1 class="mb-4">{% trans "Sign In" %}</h1>
 
-          {% if socialaccount_providers %}
-          <p>{% blocktrans with site.name as site_name %}Please sign in with one
-          of your existing third party accounts. Or, <a href="{{ signup_url }}">sign up</a>
-          for a {{ site_name }} account and sign in below:{% endblocktrans %}</p>
+              {% get_providers as socialaccount_providers %}
 
-          <div class="socialaccount_ballot">
+              {% if socialaccount_providers %}
+              <p class="mb-3">{% blocktrans with site.name as site_name %}Sign in with a third-party account or <a href="{{ signup_url }}" class="text-primary">sign up</a> for a {{ site_name }} account and sign in below.{% endblocktrans %}</p>
 
-            <ul class="socialaccount_providers">
-              {% include "socialaccount/snippets/provider_list.html" with process="login" %}
-            </ul>
+              <div class="socialaccount_ballot mb-4">
+                <ul class="socialaccount_providers list-unstyled d-flex justify-content-center">
+                  {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+                </ul>
+                <div class="login-or mb-2">{% trans 'or' %}</div>
+              </div>
 
-            <div class="login-or">{% trans 'or' %}</div>
+              {% include "socialaccount/snippets/login_extra.html" %}
+              {% else %}
+              <p>{% blocktrans %}If you don't have an account, please <a href="{{ signup_url }}" class="text-primary">sign up</a> first.{% endblocktrans %}</p>
+              {% endif %}
 
-          </div>
+              <!-- Login Form -->
+              <form class="login" method="POST" action="{% url 'account_login' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                  {{ form|crispy }}
+                </div>
 
-          {% include "socialaccount/snippets/login_extra.html" %}
+                {% if redirect_field_value %}
+                  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                  <a class="btn btn-link text-muted" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+                  <button class="btn btn-primary" type="submit">{% trans "Sign In" %}</button>
+                </div>
+              </form>
 
-          {% else %}
-          <p>{% blocktrans %}If you have not created an account yet, then please
-          <a href="{{ signup_url }}">sign up</a> first.{% endblocktrans %}</p>
-          {% endif %}
-
-          <form class="login" method="POST" action="{% url 'account_login' %}">
-            {% csrf_token %}
-            {{ form|crispy }}
-            {% if redirect_field_value %}
-            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
-            {% endif %}
-            <a class="btn btn-default" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
-            <button class="btn btn-primary" type="submit">{% trans "Sign In" %}</button>
-          </form>
+            </div>
           </div>
         </div>
       </section>
     </div>
   </main>
+  <style>
+    /* Global styles */
+body {
+  background-color: #f9f9f9;
+}
 
+/* Logo */
+.logo {
+  width: 120px;
+  height: auto;
+}
+
+/* Form container styling */
+.form-container {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+/* Input fields and buttons */
+input, button {
+  border-radius: 25px;
+}
+
+/* Social provider icons (SVG) */
+.socialaccount_providers li {
+  margin: 0 10px;
+}
+
+.socialaccount_providers a {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  transition: background-color 0.3s;
+}
+
+.socialaccount_providers a:hover {
+  background-color: #ddd;
+}
+
+.socialaccount_providers a img {
+  max-width: 30px;
+  max-height: 30px;
+}
+
+/* Button styling */
+.btn-primary {
+  background-color: #007bff; /* Customize this color */
+  border: none;
+  border-radius: 25px;
+  padding: 12px 30px;
+}
+
+.btn-link {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+  </style>
 {% endblock %}
