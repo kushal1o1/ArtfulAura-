@@ -329,6 +329,9 @@ class PaymentView(LoginRequiredMixin,View):
             
         elif kwargs['payment_option'] == 'kalti':
             return render(self.request, "payment.html",context={'order':order,"method":"khalti"})
+        
+        elif kwargs["payment_option"]=="stripe":
+            return render(self.request, "payment.html",context={'order':order,"method":"stripe"})
             
         else:
             messages.warning(self.request, "Invalid payment option selected")
