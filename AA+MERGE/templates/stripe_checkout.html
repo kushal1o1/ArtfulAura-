@@ -22,6 +22,8 @@
       </button>
       <div id="payment-message" class="hidden"></div>
     </form>
- 
+<script>
+  const items = {{ order.get_total|safe }};
+</script>
   </body>
 </html>

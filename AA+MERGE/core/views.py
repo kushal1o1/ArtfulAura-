@@ -22,6 +22,8 @@ import time
 from .services import add_to_cart_service,remove_from_cart_service,remove_single_item_from_cart_service,generate_transaction_uuid,generate_signature,create_ref_code,is_valid_form,handle_esewa_payment,get_esewa_status,handle_order_complete,handle_refund_request,verify_signature
 import stripe
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+stripe.api_key=config("STRIPE_API_KEY")
 
 # import jsonify
 # Create your views here.
@@ -334,7 +336,7 @@ class PaymentView(LoginRequiredMixin,View):
             return render(self.request, "payment.html",context={'order':order,"method":"khalti"})
         
         elif kwargs["payment_option"]=="stripe":
-            return render(self.request, "payment.html",context={'order':order,"method":"stripe","STRIPE_PUBLISHABLE_KEY":config("STRIPE_PUBLISHABLE_KEY")})
+            return render(self.request, "payment.html",context={'order':order,"method":"stripe"})
             
         else:
             messages.warning(self.request, "Invalid payment option selected")
@@ -509,32 +511,19 @@ def calculate_order_amount(items):
     # Replace this constant with a calculation of the order's amount
     # Calculate the order total on the server to prevent
     # people from directly manipulating the amount on the client
-    return 1400
+    print("items",items)
+    print(items)
+    return items
     
 def initiate_stripe(request):
     order = Order.objects.get(user=request.user, ordered=False)
-    print("here lol")
-    # try:
-    #     checkout_session = stripe.checkout.Session.create(
-    #         line_items=[
-    #             {
-    #                 'price': "price_1234",
-    #                 'quantity': 1,
-    #             },
-    #         ],
-    #         mode='payment',
-    #         success_url='http://127.0.0.1:8000/payment-sucess',
-    #         cancel_url="http://127.0.0.1:8000/payment-cancel",
-    #     )
-    # except Exception as e:
-    #     return str(e)
-    stripe.api_key=config("STRIPE_API_KEY")
     try:
-        print("inside try")
+        # print("inside try")
         data = json.loads(request.body)
-        print("Received data:", data)
-        print("inside getting data")
+        # print("Received data:", data)
+        # print("inside getting data")
         # Create a PaymentIntent with the order amount and currency
+
         intent = stripe.PaymentIntent.create(
             amount=calculate_order_amount(data['items']),
             currency='usd',
@@ -543,7 +532,6 @@ def initiate_stripe(request):
                 'enabled': True,
             },
         )
-        print(intent["client_secret"])
         return JsonResponse({
             'clientSecret': intent['client_secret']
         })
@@ -554,6 +542,44 @@ def initiate_stripe(request):
     # from django.http import JsonResponse
     # return JsonResponse({'clientSecret': session.client_secret})
     
-def sucess_page(request):
-    messages.success(request, "Your order was successful!")
-    return redirect("core:home")
+def verify_stripe(request):
+    """
+    Verifies Stripe payment after redirect from success URL.
+    Query params: payment_intent, payment_intent_client_secret, redirect_status
+    """
+    try:
+        payment_intent_id = request.GET.get("payment_intent")
+        client_secret = request.GET.get("payment_intent_client_secret")
+        redirect_status = request.GET.get("redirect_status")
+
+        if not payment_intent_id or not client_secret:
+            return JsonResponse({"error": "Missing required parameters"}, status=400)
+
+        # Retrieve payment from Stripe
+        payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+        if payment_intent.status != "succeeded":
+            messages.info(request,"Sorry Payment was not sucessfull .Please try again")
+            return redirect("core:checkout")
+        if payment_intent.status == "succeeded":
+            # Payment was successful, handle the order completion
+            handle_order_complete(request.user, payment_intent.id, payment_intent.amount)
+            messages.success(request, "Your order was successful!")
+            return redirect("/")
+        # Optional: log or process the payment
+        return JsonResponse({
+            "message": "Payment verified successfully",
+            "payment_intent": {
+                "id": payment_intent.id,
+                "status": payment_intent.status,
+                "amount": payment_intent.amount,
+                "currency": payment_intent.currency,
+                "redirect_status": redirect_status
+            }
+        })
+
+    except stripe.error.StripeError as e:
+        return JsonResponse({"error": f"Stripe error: {str(e)}"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": f"Unexpected error: {str(e)}"}, status=500)
+
+
