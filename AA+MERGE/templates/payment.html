@@ -15,7 +15,6 @@
         
               <hr class="mb-4"> 
               {% if method == 'esewa' %}
-              <body>
                 <form action="https://rc-epay.esewa.com.np/api/epay/main/v2/form" method="POST">
                 <input type="text" id="amount" name="amount" value="{{order.get_total}}" required>
                 <input type="text" id="tax_amount" name="tax_amount" value ="0" required>
@@ -41,6 +40,8 @@
                 <input type="text" name="return_url" value="http://127.0.0.1:8000/verify-khalti">
                 <button class="btn btn-primary btn-lg btn-block" type="submit">Continue to {{method}}</button>
             </form>
+            {%elif method == "stripe"%}
+              {% include 'stripe_checkout.html'%}
              {% else %}
               <h2>Error</h2>
               {% endif %}

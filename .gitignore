@@ -23,3 +23,5 @@ AA+_BACKEND/media/
 
 #testing page
 AA+MERGE/templates/test.html
+AA+MERGE/static_for_md/js/checkout.js
+AA+MERGE/static_for_md/js/complete.js
