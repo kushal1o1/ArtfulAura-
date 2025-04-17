@@ -1,44 +1,64 @@
-<div class="col-md-12 mb-4">
-    <h4 class="d-flex justify-content-between align-items-center mb-3">
-    <span class="text-muted">Your cart</span>
-    <span class="badge badge-secondary badge-pill">{{ order.items.count }}</span>
-    </h4>
-    <ul class="list-group mb-3 z-depth-1">
-    {% for order_item in order.items.all %}
-    <li class="list-group-item d-flex justify-content-between lh-condensed">
-        <div>
-        <h6 class="my-0"><strong class="">{{ order_item.quantity }}</strong> x {{ order_item.item.title}}</h6>
-        
+<div class="col-md-12 mb-4 rounded-4 shadow-sm overflow-hidden border" style="background-color: #ffffff;">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+      <div class="card-header bg-white border-0 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h4 class="mb-0 fw-bold" style="color: #333;">Your cart</h4>
+          <span class="badge rounded-pill px-3 py-2" style="background-color: #e60023; color: white;">{{ order.items.count }}</span>
         </div>
-        <span class="text-muted">${{ order_item.get_final_price }}</span>
-    </li>
-    {% endfor %}
-    {% if order.coupon %}
-    <li class="list-group-item d-flex justify-content-between bg-light">
-        <div class="text-success">
-        <h6 class="my-0">Promo code</h6>
-        <small>{{ order.coupon.code }}</small>
-        </div>
-        <span class="text-primary">{{ order.coupon.percentage }} % OFF {{order.get_actual_total}}</span>
-    </li>
-    {% endif %}
-    <li class="list-group-item d-flex justify-content-between">
-        <span>Total (USD)</span>
-        <strong>${{ order.get_total }}</strong>
-    </li>
-    </ul>
-
-    {% if DISPLAY_COUPON_FORM %}
-    <form class="card p-2" action="{% url 'core:add-coupon' %}" method="POST">
-        {% csrf_token %}
-        <div class="input-group">
-            {{ couponform.code }}
-            <div class="input-group-append">
-            <button class="btn btn-secondary btn-md waves-effect m-0" type="submit">Redeem</button>
+      </div>
+      
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for order_item in order.items.all %}
+          <li class="list-group-item border-0 border-bottom py-3 px-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="min-width: 40px; height: 40px;">
+                  <span class="fw-bold" style="color: #e60023;">{{ order_item.quantity }}</span>
+                </div>
+                <h6 class="mb-0 fw-normal">{{ order_item.item.title }}</h6>
+              </div>
+              <span class="fw-bold">${{ order_item.get_final_price }}</span>
             </div>
-        </div>
-    </form>
+          </li>
+          {% endfor %}
+          
+          {% if order.coupon %}
+          <li class="list-group-item border-0 py-3 px-4" style="background-color: #f8f9fa;">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-0 text-success">Promo code</h6>
+                <small class="text-muted">{{ order.coupon.code }}</small>
+              </div>
+              <span class="badge rounded-pill px-3 py-2" style="background-color: #28a745;">{{ order.coupon.percentage }}% OFF</span>
+            </div>
+          </li>
+          {% endif %}
+          
+          <li class="list-group-item border-0 py-3 px-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="fw-bold mb-0">Total (USD)</h5>
+              <h5 class="fw-bold mb-0" style="color: #e60023;">${{ order.get_total }}</h5>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    {% if DISPLAY_COUPON_FORM %}
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+      <div class="card-body p-4">
+        <form action="{% url 'core:add-coupon' %}" method="POST">
+          {% csrf_token %}
+          <div class="input-group mb-3 d-flex justify-content-between align-items-center">
+            {{ couponform.code}}
+            <button class="btn text-white rounded-pill" type="submit" style="background-color: #e60023; border-color: #e60023;">Redeem</button>
+          </div>
+          
+          
+
+        </form>
+      </div>
+    </div>
     {% endif %}
-
-</div>
-
+  </div>
