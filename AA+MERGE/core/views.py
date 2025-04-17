@@ -421,7 +421,7 @@ def verify_esewa(request):
            print("Payment is complete")
            messages.success(request, "Payment was successful!")
            total_amount = response_data["total_amount"]
-           handle_order_complete(request,transaction_uuid,total_amount)
+           handle_order_complete(request.user,transaction_uuid,total_amount)
            return redirect("core:home")
         else:
             # TODO:HAndle other requests
