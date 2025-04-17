@@ -2,156 +2,578 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% block content %}
-  <main>
-      <div class="container-fluid">
-        {% if orders %}
-        <h1 class="my-5 h2 text-center">Your Previous Orders</h1>
-        <div class="table-responsive text-nowrap col-md-8 mx-auto">
-          {% for object in orders %}
-          <h2 class="text-center mb-4">Order {{ forloop.counter }}</h2>
-          <div class="table-responsive my-4">
-            <table class="table table-bordered table-hover align-middle text-center">
-              <thead class="table-light">
-                <tr>
-                  <th scope="col">Image</th>
-                  <th scope="col">Title</th>
-                  <th scope="col">Price</th>
-                  <th scope="col">Quantity</th>
-                  <th scope="col">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for order_item in object.items.all %}
-                <tr>
-                  <td>
-                    <img src="{{ order_item.item.image.url }}" class="img-thumbnail" style="height:50px; width:50px;" alt="Item Image">
-                  </td>
-                  <td>{{ order_item.item.title }}</td>
-                  <td>${{ order_item.item.price }}</td>
-                  <td>{{ order_item.quantity }}</td>
-                  <td>
-                    {% if order_item.item.discount_price %}
-                      ${{ order_item.get_total_discount_item_price }}<br>
-                      <span class="badge bg-success mt-1">Saved ${{ order_item.get_amount_saved }}</span>
-                    {% else %}
-                      ${{ order_item.get_total_item_price }}
-                    {% endif %}
-                  </td>
-                </tr>
-                {% empty %}
-                <tr>
-                  <td colspan="5" class="text-muted">Your cart was empty</td>
-                </tr>
-                {% endfor %}
-          
-                {% if object.coupon %}
-                <tr class="table-warning">
-                  <td colspan="4"><strong>Coupon</strong></td>
-                  <td><strong>{{ object.coupon.percentage }}% OFF ${{ object.get_actual_total }}</strong></td>
-                </tr>
-                <tr class="table-warning">
-                  <td colspan="4">Coupon Amount</td>
-                  <td>-${{ object.get_coupon_amount }}</td>
-                </tr>
-                {% endif %}
-          
-                {% if object.get_total %}
-                <tr class="table-info">
-                  <td colspan="4"><strong>Order Total</strong></td>
-                  <td><strong>${{ object.get_total }}</strong></td>
-                </tr>
-                {% endif %}
-          
-                {% if object.ref_code %}
-                <tr class="table-light">
-                  <td colspan="4"><strong>Reference Code</strong></td>
-                  <td>
-                    <div class="d-flex justify-content-between align-items-center">
-                      <code id="refCode">{{ object.ref_code }}</code>
-                      <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyRefCode(this)">
-                        <i class="fas fa-copy me-1"></i> Copy
-                      </button>
-                    </div>
-                    <div id="copyAlert" class="text-success small mt-1" style="display: none;">
-                      ✅ Copied to clipboard!
-                    </div>
-                  </td>
-                </tr>
-                
-                {% endif %}
-              </tbody>
-            </table>
-          </div>
-          
-          <br>
-          {% endfor %}
-        </div>
-
-        <div class="container my-5">
-          <div class="row justify-content-center align-items-center g-4">
-            <!-- Image Section -->
-            <div class="col-12 col-md-5 text-center">
-              <img src="{% static 'svgs/refund.svg' %}" alt="Refund Illustration" class="img-fluid rounded" style="max-height: 280px;">
-            </div>
-        
-            <!-- Form Section -->
-            <div class="col-12 col-md-7">
-              <div class="card border-0 shadow-lg rounded-4">
-                <div class="card-body p-4">
-                  <h2 class="text-center mb-4">Request Refund</h2>
-                  <form method="POST">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                      <label for="ref_code" class="form-label">Reference Code</label>
-                      {{ form.ref_code }}
-                    </div>
-                    <div class="mb-3">
-                      <label for="message" class="form-label">Message</label>
-                      {{ form.message }}
-                    </div>
-                    <div class="mb-4">
-                      <label for="email" class="form-label">Email</label>
-                      {{ form.email }}
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Submit</button>
-                  </form>
+<main class="pinterest-orders-page">
+  <div class="container py-5">
+    {% if orders %}
+      <div class="text-center mb-5">
+        <h1 class="pinterest-heading">Your Previous Orders</h1>
+        <p class="text-muted">Track your order history and request refunds if needed</p>
+      </div>
+      
+      <div class="orders-container">
+        {% for object in orders %}
+          <div class="order-card">
+            <div class="order-header">
+              <h2>Order {{ forloop.counter }}</h2>
+              {% if object.ref_code %}
+                <div class="ref-code-container">
+                  <span class="ref-label">Reference:</span>
+                  <code id="refCode{{ forloop.counter }}">{{ object.ref_code }}</code>
+                  <button class="copy-btn" onclick="copyRefCode('refCode{{ forloop.counter }}', this)">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                  <span class="copy-tooltip">Copy code</span>
                 </div>
+              {% endif %}
+            </div>
+            
+            <div class="order-items">
+              <div class="table-responsive">
+                <table class="table align-middle">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Details</th>
+                      <th>Price</th>
+                      <th>Quantity</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for order_item in object.items.all %}
+                      <tr>
+                        <td class="item-image">
+                          <div class="product-image-container">
+                            <img src="{{ order_item.item.image.url }}" alt="{{ order_item.item.title }}">
+                          </div>
+                        </td>
+                        <td>
+                          <h6 class="item-title">{{ order_item.item.title }}</h6>
+                        </td>
+                        <td>${{ order_item.item.price }}</td>
+                        <td>{{ order_item.quantity }}</td>
+                        <td class="price-cell">
+                          {% if order_item.item.discount_price %}
+                            <span class="current-price">${{ order_item.get_total_discount_item_price }}</span>
+                            <span class="savings-badge">Saved ${{ order_item.get_amount_saved }}</span>
+                          {% else %}
+                            <span class="current-price">${{ order_item.get_total_item_price }}</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% empty %}
+                      <tr>
+                        <td colspan="5" class="text-center py-4">
+                          <div class="empty-order">
+                            <i class="fas fa-shopping-cart"></i>
+                            <p>Your cart was empty</p>
+                          </div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                    
+                    {% if object.coupon %}
+                      <tr class="summary-row coupon-row">
+                        <td colspan="4" class="text-end">
+                          <strong>Coupon ({{ object.coupon.percentage }}% OFF)</strong>
+                        </td>
+                        <td>
+                          <span class="discount-amount">-${{ object.get_coupon_amount }}</span>
+                        </td>
+                      </tr>
+                    {% endif %}
+                    
+                    {% if object.get_total %}
+                      <tr class="summary-row total-row">
+                        <td colspan="4" class="text-end">
+                          <strong>Order Total</strong>
+                        </td>
+                        <td>
+                          <strong class="total-price">${{ object.get_total }}</strong>
+                        </td>
+                      </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-        </div>
-        
-        {% else %}
-        <p class="h2 text-center">You don't have any previous orders</p>
-        {% endif %}
+        {% endfor %}
       </div>
-  </main>
-  <script>
-    function copyRefCode(button) {
-      const codeText = document.getElementById('refCode').textContent;
-      navigator.clipboard.writeText(codeText).then(() => {
-        // Change button text/icon
-        button.innerHTML = '<i class="fas fa-check me-1"></i> Copied';
+
+      <!-- Refund Request Section -->
+      <div class="refund-section">
+        <div class="row g-0">
+          <!-- Image Side -->
+          <div class="col-12 col-lg-5">
+            <div class="refund-image-container">
+              {% load static%}
+              <img src="{% static 'svgs/refund.svg' %}" alt="Refund Illustration" class="refund-image">
+            </div>
+          </div>
+          
+          <!-- Form Side -->
+          <div class="col-12 col-lg-7">
+            <div class="refund-form-container">
+              <h2>Request a Refund</h2>
+              <p class="text-muted mb-4">If you're not satisfied with your purchase, fill out the form below to request a refund.</p>
+              
+              <form method="POST" class="refund-form">
+                {% csrf_token %}
+                <div class="form-group mb-3">
+                  <label for="ref_code" class="form-label">Reference Code</label>
+                  {{ form.ref_code }}
+                </div>
+                
+                <div class="form-group mb-3">
+                  <label for="email" class="form-label">Email Address</label>
+                  {{ form.email }}
+                </div>
+                
+                <div class="form-group mb-4">
+                  <label for="message" class="form-label">Reason for Refund</label>
+                  {{ form.message }}
+                </div>
+                
+                <button type="submit" class="btn-submit-refund">
+                  <i class="fas fa-paper-plane me-2"></i>Submit Request
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    {% else %}
+      <!-- No Orders State -->
+      <div class="empty-orders-container">
+        <div class="empty-orders-icon">
+          <i class="fas fa-shopping-bag"></i>
+        </div>
+        <h2>You don't have any previous orders</h2>
+        <p class="text-muted">Start shopping to see your order history here!</p>
+        <a href="/" class="btn-shop-now">Shop Now</a>
+      </div>
+    {% endif %}
+  </div>
+</main>
+
+<style>
+  /* Pinterest-Style Orders Page */
+  .pinterest-orders-page {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    background-color: #f9f9f9;
+    color: #211922;
+    padding: 20px 0 60px;
+  }
   
-        // Show copied message
-        const alert = document.getElementById('copyAlert');
-        alert.style.display = 'block';
+  .pinterest-heading {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #211922;
+  }
   
-        // Reset after a short delay
-        setTimeout(() => {
-          button.innerHTML = '<i class="fas fa-copy me-1"></i> Copy';
-          alert.style.display = 'none';
-        }, 1500);
-      }).catch(err => {
-        console.error('Failed to copy:', err);
+  /* Order Cards */
+  .orders-container {
+    max-width: 1000px;
+    margin: 0 auto 60px;
+  }
+  
+  .order-card {
+    background-color: #fff;
+    border-radius: 24px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+    overflow: hidden;
+  }
+  
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .order-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .ref-code-container {
+    display: flex;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    position: relative;
+  }
+  
+  .ref-label {
+    color: #767676;
+    margin-right: 8px;
+  }
+  
+  .copy-btn {
+    background: none;
+    border: none;
+    color: #767676;
+    cursor: pointer;
+    padding: 4px 8px;
+    margin-left: 8px;
+    transition: color 0.2s ease;
+  }
+  
+  .copy-btn:hover {
+    color: #e60023;
+  }
+  
+  .copy-tooltip {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    background-color: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+  
+  .copy-btn:hover + .copy-tooltip {
+    opacity: 1;
+  }
+  
+  .order-items {
+    padding: 20px;
+  }
+  
+  /* Table Styles */
+  .table {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+  
+  .table thead th {
+    border: none;
+    color: #767676;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 16px;
+    background-color: transparent;
+  }
+  
+  .table tbody tr {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    background-color: white;
+  }
+  
+  .table tbody td {
+    border: none;
+    padding: 12px 16px;
+    vertical-align: middle;
+  }
+  
+  .product-image-container {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .product-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .item-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .price-cell {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .current-price {
+    font-weight: 600;
+    color: #211922;
+  }
+  
+  .savings-badge {
+    display: inline-block;
+    background-color: #5cb85c;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-top: 4px;
+  }
+  
+  .summary-row {
+    background-color: #f9f9f9 !important;
+  }
+  
+  .coupon-row {
+    color: #28a745;
+  }
+  
+  .discount-amount {
+    color: #28a745;
+    font-weight: 600;
+  }
+  
+  .total-row {
+    font-size: 16px;
+  }
+  
+  .total-price {
+    color: #e60023;
+  }
+  
+  .empty-order {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #767676;
+  }
+  
+  .empty-order i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    opacity: 0.5;
+  }
+  
+  /* Refund Section */
+  .refund-section {
+    max-width: 1000px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  .refund-image-container {
+    height: 100%;
+    background-color: #f7f2fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  
+  .refund-image {
+    max-width: 100%;
+    max-height: 300px;
+  }
+  
+  .refund-form-container {
+    padding: 40px;
+  }
+  
+  .refund-form-container h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #211922;
+  }
+  
+  .form-label {
+    font-weight: 600;
+    color: #211922;
+    margin-bottom: 8px;
+  }
+  
+  .form-control {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+  
+  .form-control:focus {
+    border-color: #e60023;
+    box-shadow: 0 0 0 0.2rem rgba(230, 0, 35, 0.25);
+  }
+  
+  .btn-submit-refund {
+    background-color: #e60023;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    width: 100%;
+  }
+  
+  .btn-submit-refund:hover {
+    background-color: #d20c1d;
+  }
+  
+  /* Empty Orders State */
+  .empty-orders-container {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: white;
+    border-radius: 24px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .empty-orders-icon {
+    font-size: 60px;
+    color: #e0e0e0;
+    margin-bottom: 24px;
+  }
+  
+  .empty-orders-container h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #211922;
+  }
+  
+  .btn-shop-now {
+    display: inline-block;
+    background-color: #e60023;
+    color: white;
+    text-decoration: none;
+    padding: 12px 32px;
+    border-radius: 24px;
+    font-weight: 600;
+    margin-top: 24px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .btn-shop-now:hover {
+    background-color: #d20c1d;
+    color: white;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 992px) {
+    .refund-image-container {
+      padding: 30px;
+    }
+    
+    .refund-form-container {
+      padding: 30px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .order-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .ref-code-container {
+      margin-top: 12px;
+    }
+    
+    .table thead {
+      display: none;
+    }
+    
+    .table tbody tr {
+      display: block;
+      margin-bottom: 16px;
+      padding: 12px;
+    }
+    
+    .table tbody td {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      text-align: right;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .table tbody td:last-child {
+      border-bottom: none;
+    }
+    
+    .table tbody td:before {
+      content: attr(data-title);
+      font-weight: 600;
+      float: left;
+      text-align: left;
+    }
+    
+    .product-image-container {
+      margin-right: auto;
+    }
+    
+    .summary-row td {
+      background-color: #f9f9f9;
+    }
+  }
+</style>
+
+<script>
+  function copyRefCode(elementId, button) {
+    const codeText = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(codeText).then(() => {
+      // Change button icon
+      button.innerHTML = '<i class="fas fa-check"></i>';
+      
+      // Show copied tooltip
+      const tooltip = button.nextElementSibling;
+      tooltip.textContent = 'Copied!';
+      tooltip.style.opacity = '1';
+      
+      // Reset after a short delay
+      setTimeout(() => {
+        button.innerHTML = '<i class="fas fa-copy"></i>';
+        tooltip.textContent = 'Copy code';
+        tooltip.style.opacity = '0';
+      }, 1500);
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+    });
+  }
+  
+  // Add data-titles for responsive tables
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.innerWidth <= 768) {
+      const tables = document.querySelectorAll('.table');
+      
+      tables.forEach(table => {
+        const headerCells = table.querySelectorAll('thead th');
+        const headerValues = Array.from(headerCells).map(cell => cell.textContent);
+        
+        const rows = table.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          
+          cells.forEach((cell, index) => {
+            if (headerValues[index]) {
+              cell.setAttribute('data-title', headerValues[index]);
+            }
+          });
+        });
       });
     }
-  </script>
+  });
+</script>
 {% endblock content %}
-
-
-
-  
-
-
-
