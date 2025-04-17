@@ -513,7 +513,7 @@ def calculate_order_amount(items):
     # people from directly manipulating the amount on the client
     print("items",items)
     print(items)
-    return items
+    return items*100
     
 def initiate_stripe(request):
     order = Order.objects.get(user=request.user, ordered=False)
