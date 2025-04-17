@@ -507,7 +507,7 @@ def calculate_order_amount(items):
     # people from directly manipulating the amount on the client
     print("items",items)
     print(items)
-    return items*100
+    return int(items*100)
     
 def initiate_stripe(request):
     order = Order.objects.get(user=request.user, ordered=False)
@@ -531,6 +531,8 @@ def initiate_stripe(request):
         })
     except Exception as e:
         print("inside except")
+        messages.info(request, f"An error occurred while creating the payment intent.{e}")
+        print("Error:", e)
         return JsonResponse({'error': str(e)})
 
     # from django.http import JsonResponse
