@@ -70,3 +70,5 @@ done= False
 # TODO: Add new social login either mail,google or facebook
 done= False
 
+#TODO:add stripe for learning other payment integrations
+done=False
