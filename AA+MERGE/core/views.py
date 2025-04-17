@@ -1,7 +1,4 @@
 
-import hmac
-import hashlib
-import base64
 import json
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,9 +13,6 @@ from .forms import CheckoutForm,CouponForm,RefundForm
 from django.shortcuts import redirect
 from django.urls import reverse
 from decouple import config
-import random
-import string
-import time
 from .services import add_to_cart_service,remove_from_cart_service,remove_single_item_from_cart_service,generate_transaction_uuid,generate_signature,create_ref_code,is_valid_form,handle_esewa_payment,get_esewa_status,handle_order_complete,handle_refund_request,verify_signature
 import stripe
 from django.http import JsonResponse
@@ -49,7 +43,7 @@ class HomeView(ListView):
             queryset = queryset.filter(label=label)
         if search_query:  
             queryset = queryset.filter(title__icontains=search_query) 
-        return queryset
+        return queryset.order_by('?')
     
 class ItemDetailView(DetailView):
     model = Item
