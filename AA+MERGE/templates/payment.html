@@ -16,18 +16,21 @@
               <hr class="mb-4"> 
               {% if method == 'esewa' %}
                 <form action="https://rc-epay.esewa.com.np/api/epay/main/v2/form" method="POST">
-                <input type="text" id="amount" name="amount" value="{{order.get_total}}" required>
-                <input type="text" id="tax_amount" name="tax_amount" value ="0" required>
-                <input type="text" id="total_amount" name="total_amount" value="{{order.get_total}}" required>
-                <input type="text" id="transaction_uuid" name="transaction_uuid" value="{{uuid}}" required>
-                <input type="text" id="product_code" name="product_code" value ="EPAYTEST" required>
-                <input type="text" id="product_service_charge" name="product_service_charge" value="0" required>
-                <input type="text" id="product_delivery_charge" name="product_delivery_charge" value="0" required>
-                <input type="text" id="success_url" name="success_url" value="http://127.0.0.1:8000/verify-esewa" required>
-                <input type="text" id="failure_url" name="failure_url" value="http://127.0.0.1:8000/verify-esewa" required>
-                <input type="text" id="signed_field_names" name="signed_field_names" value="total_amount,transaction_uuid,product_code" required>
-                <input type="text" id="signature" name="signature" value="{{signature}}" required>
-                <input value="Submit" type="submit">
+                <input type="hidden" id="amount" name="amount" value="{{order.get_total}}" required>
+                <input type="hidden" id="tax_amount" name="tax_amount" value ="0" required>
+                <input type="hidden" id="total_amount" name="total_amount" value="{{order.get_total}}" required>
+                <input type="hidden" id="transaction_uuid" name="transaction_uuid" value="{{uuid}}" required>
+                <input type="hidden" id="product_code" name="product_code" value ="EPAYTEST" required>
+                <input type="hidden" id="product_service_charge" name="product_service_charge" value="0" required>
+                <input type="hidden" id="product_delivery_charge" name="product_delivery_charge" value="0" required>
+                <input type="hidden" id="success_url" name="success_url" value="http://127.0.0.1:8000/verify-esewa" required>
+                <input type="hidden" id="failure_url" name="failure_url" value="http://127.0.0.1:8000/verify-esewa" required>
+                <input type="hidden" id="signed_field_names" name="signed_field_names" value="total_amount,transaction_uuid,product_code" required>
+                <input type="hidden" id="signature" name="signature" value="{{signature}}" required>
+                <div class="div container d-flex align-items-center justify-content-center">
+                  <button class="d-flex btn btn-primary w-full" value="Submit" type="submit">Click Here and You will be redirect to Esewa </button>
+                </div>
+                
                 </form>
                </body>
                 
