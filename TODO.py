@@ -77,3 +77,9 @@ done=False
 
 done=False
 
+
+# TODO: add email sending functionality for order confirmation and payment confirmation
+done=False
+
+
+
