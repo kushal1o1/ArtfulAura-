@@ -4,58 +4,53 @@
   <main>
     <div class="container">
 
-      <!--Navbar-->
-      <nav class=" navbar navbar-expand-lg navbar-dark mdb-color   bg-dark mt-3 ">
+<!-- Categories Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark rounded shadow-sm my-3 py-2 px-3">
 
-        <!-- Navbar brand -->
-        <span class="navbar-brand">Categories:</span>
+  <!-- Brand -->
+  <span class="navbar-brand small">Categories:</span>
 
-        <!-- Collapse button -->
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#basicExampleNav"
-          aria-controls="basicExampleNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+  <!-- Toggler -->
+  <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#categoryNav"
+    aria-controls="categoryNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
 
-        <!-- Collapsible content -->
-        <div class="collapse navbar-collapse" id="basicExampleNav">
-
-          <!-- Links -->
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="/">All</a>
-            </li>
-          {% for code, name in categories %}
-            <li class="nav-item">
-              <a class="nav-link" href="?category={{ code }}">{{ name }}</a>
-            </li>
-            {% endfor %}
-           
-          </ul>
-         
-
-
-          <form class="form-inline" method="get" action="">
-            <div class="md-form my-0">
-                <input class="form-control mr-sm-2" type="text" name="search" placeholder="Search" aria-label="Search" value="{{ request.GET.search }}">
-                <input type="hidden" name="category" value="{{ request.GET.category }}"> 
-            </div>
-        </form>
-        </div>
-        <!-- Collapsible content -->
-
-      </nav>
-      <!--/.Navbar-->
-    <!-- labels -->
-     <nav class="navbar navbar-expand-lg  mb-5">
-    <ul class="navbar-nav  d-flex flex-row align-items-center justify-content-between"> 
-      {% for code, name in labels %}
-      <li class="nav-item ">
-        <a class="badge badge-pill {{  code}}-color m-2 p-2" href="?label={{ code }}">{{name}}</a>
+  <!-- Content -->
+  <div class="collapse navbar-collapse" id="categoryNav">
+    <ul class="navbar-nav mr-auto small">
+      <li class="nav-item">
+        <a class="nav-link" href="/">All</a>
+      </li>
+      {% for code, name in categories %}
+      <li class="nav-item">
+        <a class="nav-link" href="?category={{ code }}">{{ name }}</a>
       </li>
       {% endfor %}
-
     </ul>
-  </nav>
+
+    <!-- Search Form -->
+    <form class="form-inline my-2 my-lg-0" method="get" action="">
+      <input class="form-control form-control-sm rounded-pill mr-sm-2" type="text" name="search" placeholder="Search"
+        value="{{ request.GET.search }}">
+      <input type="hidden" name="category" value="{{ request.GET.category }}">
+    </form>
+  </div>
+</nav>
+
+<!-- Labels Badge Navbar -->
+<nav class="navbar navbar-expand-lg p-0 mb-4">
+  <ul class="navbar-nav d-flex  flex-wrap align-items-center small">
+    {% for code, name in labels %}
+    <li class="nav-item mx-1 my-1">
+      <a class="badge badge-pill {{ code }}-color px-3 py-2 text-decoration-none" href="?label={{ code }}">
+        {{ name }}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
+
       <!--Section: Products v.3-->
       <section class="pinterest-grid">
         <div class="masonry-grid">

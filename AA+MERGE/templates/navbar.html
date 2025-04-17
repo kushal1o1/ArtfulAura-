@@ -1,79 +1,67 @@
 {% load cart_template_tags %}
-<nav class="bg-dark navbar fixed-top navbar-expand-lg navbar-dark scrolling-navbar">
-  <div class="container">
-    <!-- Brand with logo -->
-    <a class="navbar-brand waves-effect d-flex align-items-center" href="/">
-      {% load static %}
-      <img src="{% static 'images/logo.png' %}" alt="logo" class="img-fluid" style="max-height: 40px; max-width: 100%;">
+{% load static %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top rounded-bottom shadow-sm py-2 px-3">
+  <div class="container d-flex justify-content-between align-items-center">
+
+    <!-- Brand -->
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img src="{% static 'images/logo.png' %}" alt="logo" class="img-fluid" style="height: 32px;">
     </a>
 
-    <!-- Collapse -->
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-toggle="collapse"
-      data-target="#navbarSupportedContent"
-      aria-controls="navbarSupportedContent"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
+    <!-- Toggler -->
+    <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarContent"
+      aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- Links -->
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <!-- Left -->
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-          <a class="nav-link waves-effect" href="/">
-            Home
-            <span class="sr-only">(current)</span>
-          </a>
+    <!-- Collapsible -->
+    <div class="collapse navbar-collapse" id="navbarContent">
+
+      <!-- Left Links -->
+      <ul class="navbar-nav mr-auto small">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Home</a>
         </li>
         {% if request.user.is_authenticated %}
         <li class="nav-item">
-          <a class="nav-link waves-effect" href="/checkout">Checkout</a>
+          <a class="nav-link" href="/checkout">Checkout</a>
         </li>
-        
         <li class="nav-item">
-          <a class="nav-link waves-effect" href="/request-refund/">Request Refund</a>
+          <a class="nav-link" href="/request-refund/">Refund</a>
         </li>
         {% endif %}
       </ul>
 
-      <!-- Right -->
-      <ul class="navbar-nav nav-flex-icons">
+      <!-- Right Icons -->
+      <ul class="navbar-nav ml-auto align-items-center small">
         {% if request.user.is_authenticated %}
-        <li class="nav-item">
-          <a
-            href="{% url 'core:order-summary' %}"
-            class="nav-link waves-effect"
-          >
-            <span class="badge red z-depth-1 mr-1">
-              {{ request.user|cart_item_count }}
+        <li class="nav-item position-relative mx-2">
+          <a href="{% url 'core:order-summary' %}" class="nav-link">
+            {% with request.user|cart_item_count as count %}
+            {% if count > 0 %}
+            <span class="badge badge-danger position-absolute top-0 start-100 translate-middle rounded-circle">
+              {{ count }}
             </span>
-            <i class="fas fa-shopping-cart"></i>
-            <span class="clearfix d-none d-sm-inline-block">Cart</span>
+            {% endif %}
+            {% endwith %}
+            <i class="fas fa-shopping-cart ml-2"></i>
+            
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link waves-effect" href="{% url 'account_logout' %}">
-            <span class="clearfix d-none d-sm-inline-block">Logout</span>
-          </a>
+        <li class="nav-item mx-1">
+          <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
         </li>
         {% else %}
-        <li class="nav-item">
-          <a class="nav-link waves-effect" href="{% url 'account_login' %}">
-            <span class="clearfix d-none d-sm-inline-block">Login</span>
-          </a>
+        <li class="nav-item mx-1">
+          <a class="nav-link" href="{% url 'account_login' %}">Login</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link waves-effect" href="{% url 'account_signup' %}">
-            <span class="clearfix d-none d-sm-inline-block">Signup</span>
-          </a>
+        <li class="nav-item mx-1">
+          <a class="nav-link" href="{% url 'account_signup' %}">Signup</a>
         </li>
         {% endif %}
       </ul>
+
     </div>
   </div>
 </nav>
