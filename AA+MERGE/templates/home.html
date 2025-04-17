@@ -57,57 +57,245 @@
     </ul>
   </nav>
       <!--Section: Products v.3-->
-      <section class="text-center mb-4">
-
-        <div class="row wow fadeIn">
-          {% if object_list%}
-          {% for item in object_list %}
-          <div class="col-lg-3 col-md-6 mb-4">
-
-            <div class="card">
-
-              <div class="view overlay">
-                <img src="{{ item.image.url }}" class="card-img-top" style="height: auto; max-height: 300px; object-fit: cover;" >
-                <a href="{{ item.get_absolute_url }}">
-                  <div class="mask rgba-white-slight"></div>
-                </a>
+      <section class="pinterest-grid">
+        <div class="masonry-grid">
+          {% if object_list %}
+            {% for item in object_list %}
+              <div class="pin-item">
+                <div class="pin-card">
+                  <!-- Image Container -->
+                  <div class="pin-image-container">
+                    <img src="{{ item.image.url }}" class="pin-image" alt="{{ item.title }}">
+                    <!-- Hover Actions -->
+                    <div class="pin-hover-overlay">
+                      <a href="{{ item.get_absolute_url }}" class="pin-link-overlay"></a>
+                      <a href="{{ item.get_absolute_url }}" class="pin-save-button">View</a>
+                    </div>
+                  </div>
+                  
+                  <!-- Content -->
+                  <div class="pin-content">
+                    <a href="{{ item.get_absolute_url }}" class="pin-category">{{ item.get_category_display }}</a>
+                    <h3 class="pin-title">
+                      <a href="{{ item.get_absolute_url }}">{{ item.title }}</a>
+                      {% if item.get_label_display %}
+                        <span class="pin-label {{ item.label }}-color">{{item.get_label_display}}</span>
+                      {% endif %}
+                    </h3>
+                    <div class="pin-price">
+                      {% if item.discount_price %}
+                        <span class="price-amount">${{ item.discount_price }}</span>
+                        <span class="original-price">${{ item.price }}</span>
+                      {% else %}
+                        <span class="price-amount">${{ item.price }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
               </div>
-
-              <div class="card-body text-center">
-                <a href="{{ item.get_absolute_url }}" class="grey-text">
-                  <h5>{{ item.get_category_display }}</h5>
-                </a>
-                <h5>
-                  <strong>
-                    <a href="{{ item.get_absolute_url }}" class="dark-grey-text">{{ item.title }}
-                      <span class="badge badge-pill {{ item.label }}-color">{{item.get_label_display}}</span>
-                    </a>
-                  </strong>
-                </h5>
-
-                <h4 class="font-weight-bold blue-text">
-                  <strong>$
-                  {% if item.discount_price %}
-                  {{ item.discount_price }}
-                  {% else %}
-                  {{ item.price }}
-                  {% endif %}
-                  </strong>
-                </h4>
-
-              </div>
-
-            </div>
-
-          </div>
-          {% endfor %}
+            {% endfor %}
           {% else %}
-          <h1>No items found</h1>
+            <div class="no-pins-found">
+              <h2>No items found</h2>
+            </div>
           {% endif %}
         </div>
-
       </section>
-      <!--Section: Products v.3-->
+      
+      <!-- CSS for Pinterest-like styling -->
+      <style>
+        .pinterest-grid {
+          padding: 10px;
+          width: 100%;
+        }
+        
+        .masonry-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          grid-gap: 16px;
+          grid-auto-rows: minmax(100px, auto);
+        }
+        
+        .pin-item {
+          break-inside: avoid;
+          margin-bottom: 16px;
+          position: relative;
+          transition: transform 0.2s ease;
+        }
+        
+        .pin-item:hover {
+          transform: translateY(-4px);
+        }
+        
+        .pin-card {
+          border-radius: 16px;
+          overflow: hidden;
+          background-color: #fff;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+          transition: box-shadow 0.2s ease;
+        }
+        
+        .pin-card:hover {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .pin-image-container {
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+        }
+        
+        .pin-image {
+          width: 100%;
+          display: block;
+          object-fit: cover;
+          border-radius: 16px 16px 0 0;
+          aspect-ratio: 1/1.2;
+        }
+        
+        .pin-hover-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.03);
+          opacity: 0;
+          transition: opacity 0.2s ease;
+          display: flex;
+          justify-content: flex-end;
+          align-items: flex-start;
+          padding: 12px;
+        }
+        
+        .pin-image-container:hover .pin-hover-overlay {
+          opacity: 1;
+        }
+        
+        .pin-link-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 1;
+        }
+        
+        .pin-save-button {
+          position: relative;
+          z-index: 2;
+          background-color: #e60023;
+          color: white;
+          font-weight: bold;
+          padding: 8px 14px;
+          border-radius: 24px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        
+        .pin-content {
+          padding: 12px 16px 16px;
+          text-align: left;
+        }
+        
+        .pin-category {
+          color: #767676;
+          font-size: 13px;
+          text-decoration: none;
+          display: block;
+          margin-bottom: 4px;
+        }
+        
+        .pin-title {
+          font-size: 16px;
+          font-weight: 600;
+          line-height: 1.4;
+          margin: 0 0 6px 0;
+        }
+        
+        .pin-title a {
+          color: #000;
+          text-decoration: none;
+        }
+        
+        .pin-label {
+          display: inline-block;
+          font-size: 11px;
+          font-weight: bold;
+          padding: 3px 6px;
+          border-radius: 10px;
+          margin-left: 6px;
+          vertical-align: middle;
+        }
+        
+        .primary-color {
+          background-color: #007bff;
+          color: white;
+        }
+        
+        .secondary-color {
+          background-color: #6c757d;
+          color: white;
+        }
+        
+        .danger-color {
+          background-color: #e60023;
+          color: white;
+        }
+        
+        .success-color {
+          background-color: #28a745;
+          color: white;
+        }
+        
+        .pin-price {
+          display: flex;
+          align-items: center;
+          margin-top: 8px;
+        }
+        
+        .price-amount {
+          font-weight: bold;
+          color: #000;
+          font-size: 16px;
+        }
+        
+        .original-price {
+          text-decoration: line-through;
+          color: #767676;
+          margin-left: 8px;
+          font-size: 14px;
+        }
+        
+        .no-pins-found {
+          grid-column: 1 / -1;
+          text-align: center;
+          padding: 40px 0;
+          color: #767676;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .masonry-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .masonry-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-gap: 12px;
+          }
+          
+          .pin-content {
+            padding: 10px 12px 12px;
+          }
+          
+          .pin-title {
+            font-size: 14px;
+          }
+        }
+      </style>
 
       <!--Pagination-->
 
