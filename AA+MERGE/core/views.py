@@ -483,6 +483,7 @@ def submit_review(request, slug):
             print("I m here")
             parent_review = get_object_or_404(Review, id=parent_review_id)
             # Create a reply to the review
+            messages.info(request, "Replied to review")
             review = Review.objects.create(
                 item=parent_review.item,  # Associate with the same item
                 user=request.user,
@@ -492,6 +493,7 @@ def submit_review(request, slug):
             )
         else:
             # Create a new review
+            messages.info(request, "Created a review")
             review = Review.objects.create(
                 item=item,
                 user=request.user,
