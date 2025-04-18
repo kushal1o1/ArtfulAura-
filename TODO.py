@@ -39,6 +39,7 @@ done= True
 
 # TODO:Integrate a Machine Learning model to predict  feedback positive or negative
 done= False
+    # flow - create a model in google collab and export it to a file of pkl and then load the model in the django app and use it to predict the feedback
 
 # TODO:Fix some UI
  done= False #still not done of allauth uis
