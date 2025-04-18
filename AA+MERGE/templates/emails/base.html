@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ArtFul Email{% endblock %}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        body, html {
+            display: block !important;
+            width: 100% !important;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #ffffff;
+            margin: 40px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .logo {
+            width: 160px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #222;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        p {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #007bff, #00d4ff);
+            color: #ffffff;
+            padding: 14px 24px;
+            text-decoration: none;
+            font-size: 18px;
+            border-radius: 50px;
+            font-weight: bold;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        }
+        .cta-button:hover {
+            background: linear-gradient(45deg, #0056b3, #00a6ff);
+            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.5);
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #777;
+        }
+        .fallback-link {
+            word-wrap: break-word;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .fallback-link:hover {
+            text-decoration: underline;
+        }
+        .message-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            font-style: italic;
+            color: #333;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+    </style>    
+</head>
+<body>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f4; padding: 20px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);">
+                    
+                    <!-- Logo -->
+                    <tr>
+                        <td align="center" style="padding-bottom: 20px;">
+                            <img src="http://127.0.0.1:8000/static/images/logo.png" alt="Logo" width="160" style="display: block; border: 0;">
+                        </td>
+                    </tr>
+
+                    <!-- Dynamic Content Block -->
+                    <tr>
+                        <td>
+                            {% block content %}{% endblock %}
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="padding: 20px 0; font-size: 14px; color: #777;">
+                            &copy; 2025 ArtFulAura. All rights reserved.
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

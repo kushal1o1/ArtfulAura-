@@ -1,0 +1,150 @@
+{% extends 'emails/base.html' %}
+
+{% block title %}New Message Notification - ArtFulAura{% endblock %}
+
+{% block content %}
+    <!-- Header Section -->
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tr>
+            <td>
+                <h1 style="color: #333; font-size: 28px; font-weight: 700; margin-bottom: 5px; text-align: center;">
+                    <span style="background: linear-gradient(45deg, #007bff, #00d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">New Message Received</span>
+                </h1>
+                <p style="text-align: center; margin-bottom: 30px; color: #555;">
+                    You have received a new message on <strong style="color: #333;">ArtFulAura</strong>
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Message Content -->
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 25px;">
+        <tr>
+            <td>
+                <div class="message-box" style="background: #f8f9fa; padding: 20px; border-left: 4px solid #007bff; font-style: italic; color: #333; margin: 15px 0; border-radius: 5px; text-align: left;">
+                    <div style="font-size: 18px; color: #007bff; margin-bottom: 10px; font-weight: 500;">💬 Message</div>
+                    "{{ message }}"
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Payment Information -->
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 25px;">
+        <tr>
+            <td>
+                <div style="background: #f0f7ff; border-radius: 8px; padding: 20px; text-align: left;">
+                    <h3 style="color: #0056b3; margin-top: 0; margin-bottom: 15px; font-size: 18px;">
+                        <img src="https://img.icons8.com/material-rounded/24/0056b3/card-in-use.png" alt="Payment" width="24" height="24" style="vertical-align: middle; margin-right: 8px;">
+                        Payment Details
+                    </h3>
+                    
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                            <td width="50%" style="padding: 8px 0; border-bottom: 1px solid #e1e8f0;">
+                                <span style="color: #555; font-size: 14px;">Amount</span>
+                            </td>
+                            <td width="50%" style="padding: 8px 0; border-bottom: 1px solid #e1e8f0; text-align: right;">
+                                <span style="color: #333; font-weight: 600; font-size: 16px;">{{payment.amount}}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="50%" style="padding: 8px 0;">
+                                <span style="color: #555; font-size: 14px;">Status</span>
+                            </td>
+                            <td width="50%" style="padding: 8px 0; text-align: right;">
+                                {% if payment.status == "success" or payment.status == "completed" %}
+                                    <span style="background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                                        {{payment.status}}
+                                    </span>
+                                {% elif payment.status == "pending" %}
+                                    <span style="background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                                        {{payment.status}}
+                                    </span>
+                                {% else %}
+                                    <span style="background-color: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                                        {{payment.status}}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Order Items -->
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 25px;">
+        <tr>
+            <td>
+                <h3 style="color: #333; margin-bottom: 15px; font-size: 18px; text-align: left;">
+                    <img src="https://img.icons8.com/material-rounded/24/333333/shopping-cart.png" alt="Order Items" width="24" height="24" style="vertical-align: middle; margin-right: 8px;">
+                    Order Summary
+                </h3>
+                
+                {% for item in order_items %}
+                <div style="background: #ffffff; border: 1px solid #e1e8f0; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; text-align: left;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                            <td width="80" style="padding-right: 15px;">
+                                <img src="{{ item.item.image }}" alt="{{ item.item }}" width="80" height="80" style="border-radius: 6px; object-fit: cover;">
+                            </td>
+                            <td style="vertical-align: top;">
+                                <div style="font-weight: 600; color: #333; font-size: 16px; margin-bottom: 5px;">{{ item.item }}</div>
+                                <div style="color: #555; font-size: 14px; margin-bottom: 5px;">
+                                    <span style="color: #007bff; font-weight: 600;">{{ item.item.price }}</span> × {{ item.quantity }}
+                                </div>
+                                <div style="color: #333; font-weight: 600; font-size: 16px;">
+                                    Total: {{ item.item.price|floatformat:2 }}
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                {% endfor %}
+            </td>
+        </tr>
+    </table>
+
+    <!-- Call to Action -->
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 30px 0;">
+        <tr>
+            <td align="center">
+                <a href="#" class="cta-button" style="display: inline-block; background: linear-gradient(45deg, #007bff, #00d4ff); color: #ffffff; padding: 14px 30px; text-decoration: none; font-size: 16px; border-radius: 50px; font-weight: bold; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);">
+                    View Order Details
+                </a>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Additional Information -->
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 30px;">
+        <tr>
+            <td style="padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+                <p style="color: #555; font-size: 14px; margin: 0; text-align: center;">
+                    If you have any questions or concerns, please contact our support team at <a href="mailto:support@artfulaura.com" style="color: #007bff; text-decoration: none;">support@artfulaura.com</a>
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Social Media Links -->
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 30px;">
+        <tr>
+            <td align="center">
+                <div style="margin-bottom: 20px;">
+                    <a href="#" style="display: inline-block; margin: 0 10px;">
+                        <img src="https://img.icons8.com/ios-filled/30/555555/instagram-new.png" alt="Instagram" width="30" height="30">
+                    </a>
+                    <a href="#" style="display: inline-block; margin: 0 10px;">
+                        <img src="https://img.icons8.com/ios-filled/30/555555/facebook-new.png" alt="Facebook" width="30" height="30">
+                    </a>
+                    <a href="#" style="display: inline-block; margin: 0 10px;">
+                        <img src="https://img.icons8.com/ios-filled/30/555555/twitter.png" alt="Twitter" width="30" height="30">
+                    </a>
+                </div>
+            </td>
+        </tr>
+    </table>
+{% endblock %}

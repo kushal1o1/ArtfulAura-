@@ -19,6 +19,12 @@ from decouple import config
 import random
 import string
 import time
+import os
+from django.conf import settings
+from django.template import Context
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from django.template import Template
 
 def add_to_cart_service(order,item,order_item):
     """
@@ -189,6 +195,34 @@ def get_esewa_status(data, dev: bool) -> str:
         response_data = response.json()
         return response_data.get("status", "UNKNOWN")
 
+    
+def SendNotificationEmail(user,payment,order_items,message,mail_subject):
+    # Email Address Confirmation Email
+        users = user
+        from_email = settings.EMAIL_HOST_USER
+        template_path = os.path.join(settings.BASE_DIR, "templates/emails/notification.html")
+        email_subject = mail_subject
+        context ={ 
+            "message":message,
+            "user":user,
+            "payment":payment,
+            "order_items":order_items,
+        }
+        with open(template_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+
+        django_template = Template(html_content)
+        rendered_html = django_template.render(Context(context))
+
+        # Send the email
+        msg = EmailMultiAlternatives(email_subject, "", from_email,[user.email])
+        msg.attach_alternative(rendered_html, "text/html")
+        msg.send()
+        msg.failed_silently = True
+        return True
+    
+ 
+
 def handle_order_complete(user,transaction_uuid, total_amount):
     """
     Handles order completion process for all payment methods.
@@ -208,6 +242,9 @@ def handle_order_complete(user,transaction_uuid, total_amount):
     order.payment = payment 
     order.ref_code = create_ref_code()
     order.save()
+    mail_subject = "Order Confirmation"
+    mail_message = f"Your order has been successfully placed. Your order ID is {order.ref_code}."
+    SendNotificationEmail(user,payment,order_items,mail_message,mail_subject)
     
 def handle_refund_request(form):
     """
@@ -231,3 +268,5 @@ def handle_refund_request(form):
         return True
     except ObjectDoesNotExist:
         return False
+    
+   
