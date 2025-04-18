@@ -38,6 +38,8 @@ urlpatterns = [
     path("stripe_initiate/",views.initiate_stripe,name="stripe_initiate"),
     path("payment-sucess/",views.verify_stripe,name="sucess_page"),
     path("payment-cancel/",views.verify_stripe,name="sucess_page"),
+    path("accounts/profile/", views.profile_view, name="profile_view"),
+
     
     
     

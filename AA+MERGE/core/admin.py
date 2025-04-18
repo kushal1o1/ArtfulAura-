@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Item, OrderItem, Order,Payment,Coupon,Address,Refund,Review
+from .models import Item, OrderItem, Order,Payment,Coupon,Address,Refund,Review, CustomUser
+from django.contrib.auth.admin import UserAdmin
 
+
+admin.site.register(CustomUser, UserAdmin)
 
 def make_refund_accepted(modeladmin, request, queryset):
     queryset.update(refund_requested=False, refund_granted=True)
@@ -103,6 +106,5 @@ admin.site.register(Coupon,CouponAdmin)
 admin.site.register(Address, AddressAdmin)
 admin.site.register(Refund,RefundAdmin)
 admin.site.register(Review,ReviewAdmin)
-
 
 

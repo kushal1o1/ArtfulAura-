@@ -140,7 +140,11 @@
                   <!-- User Info -->
                   <div class="review-user">
                     <div class="user-avatar">
-                      <i class="fas fa-user"></i>
+                      {%if review.user.profile_pic%}
+                        <img src="{{ review.user.profile_pic }}" alt="User Avatar" class="image-fluid rounded-pill " width="38">
+                      {% else %}
+                        <i class="fas fa-user"></i>
+                      {% endif %}
                     </div>
                     <div class="user-info">
                       <span class="username">@{{ review.user.username }}</span>

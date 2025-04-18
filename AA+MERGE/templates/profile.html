@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="bg-light py-5" >
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="card mb-4 border-0 shadow rounded-4 overflow-hidden">
+          <div class="row g-0">
+            <div class="col-md-4 text-center p-4">
+              {% if user.profile_pic %}
+                <div class="position-relative d-inline-block">
+                  <img src="{{ user.profile_pic }}"
+                       class="rounded-circle img-thumbnail border-3"
+                       style="width: 160px; height: 160px; object-fit: cover;"
+                       alt="Profile Picture">
+                
+                </div>
+              {% else %}
+                <div class="position-relative d-inline-block">
+                  <div class="rounded-circle  d-flex align-items-center justify-content-center mx-auto shadow border border-2" 
+                       style="width: 160px; height: 160px;">
+                    <i class="fa fa-user-circle text-secondary" style="font-size: 5rem;"></i>
+                  </div>
+                 
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="col-md-8">
+              <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h2 class="card-title fs-1 fw-bold mb-0">{{ user.get_full_name }}</h2>
+                  <i class="fa fa-pen-to-square text-primary"></i>
+                </div>
+                <p class="text-muted d-flex align-items-center">
+                  <i class="fa fa-envelope me-2"></i>{{ user.email }}
+                </p>
+                
+                {% if default_address %}
+                <div class="mt-4 p-3 rounded-3 ">
+                  <div class="d-flex align-items-start">
+                    <i class="fa fa-location-dot text-danger me-3 mt-1" style="font-size: 1.2rem;"></i>
+                    <div>
+                      <p class="text-secondary mb-1">
+                        {{ default_address.address }}
+                        {{ default_address.street_address }}
+                        {{ default_address.country }}
+                        {{ default_address.zip }}
+                      </p>
+                      <p class="d-flex align-items-center mb-0">
+                        <i class="fa fa-phone-alt me-2 text-secondary"></i>
+                        <span>{{ default_address.phone_number }}</span>
+                        {% if default_address.default %}
+                          <span class="badge bg-danger rounded-pill ms-3">Default Address</span>
+                        {% endif %}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="card border-0 shadow rounded-4 h-100 hover-shadow-lg transition-all">
+              <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+                <h3 class="card-title fs-4 mb-0 d-flex align-items-center">
+                  <i class="fa fa-user-edit text-danger me-2"></i>
+                  Update Profile
+                </h3>
+              </div>
+              <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div class="mb-4">
+                    {{ profile_form.as_p }}
+                  </div>
+                  <button type="submit" class="btn btn-danger w-100 py-2 rounded-pill">
+                    <i class="fa fa-save me-2"></i> Save Changes
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Options Card -->
+          <div class="col-md-6">
+            <div class="card border-0 shadow rounded-4 h-100 hover-shadow-lg transition-all">
+              <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+                <h3 class="card-title fs-4 mb-0 d-flex align-items-center">
+                  <i class="fa fa-gear text-danger me-2"></i>
+                  Account Options
+                </h3>
+              </div>
+              <div class="card-body p-4">
+                <div class="d-grid gap-3">
+                  <a href="{% url 'account_change_password' %}" 
+                     class="btn btn-outline-dark rounded-pill d-flex justify-content-between align-items-center py-3 px-4 hover-scale">
+                    <span><i class="fa fa-key me-2"></i> Change Password</span>
+                    <i class="fa fa-chevron-right"></i>
+                  </a>
+                  
+                  <a href="/request-refund" class="btn btn-outline-dark rounded-pill d-flex justify-content-between align-items-center py-3 px-4 hover-scale">
+                    <span><i class="fa fa-box me-2"></i> View Orders</span>
+                    <i class="fa fa-chevron-right"></i>
+                  </a>
+                  
+                  <a href="#" class="btn btn-outline-dark rounded-pill d-flex justify-content-between align-items-center py-3 px-4 hover-scale">
+                    <span><i class="fa fa-heart me-2"></i> Saved Items</span>
+                    <i class="fa fa-chevron-right"></i>
+                  </a>
+                  
+                  <a href="#" class="btn btn-outline-dark rounded-pill d-flex justify-content-between align-items-center py-3 px-4 hover-scale">
+                    <span><i class="fa fa-bookmark me-2"></i> Wishlist</span>
+                    <i class="fa fa-chevron-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .hover-shadow-lg:hover {
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    transform: translateY(-3px);
+  }
+  
+  .hover-scale:hover {
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+  
+  .transition-all {
+    transition: all 0.3s ease;
+  }
+  
+  form input, form select, form textarea {
+    border-radius: 20px !important;
+    padding: 10px 15px !important;
+    border: 1px solid #dee2e6 !important;
+  }
+  
+  form input:focus, form select:focus, form textarea:focus {
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+    border-color: #dc3545 !important;
+  }
+  
+  /* Enhance badges */
+  .badge {
+    padding: 0.5em 0.8em;
+  }
+</style>
+{% endblock %}

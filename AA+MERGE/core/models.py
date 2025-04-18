@@ -3,6 +3,7 @@ from django.db import models
 from django.shortcuts import reverse
 from django_countries.fields import CountryField
 from django.db.models import Avg, Count
+from django.contrib.auth.models import AbstractUser
 
 
 CATEGORY_CHOICES = (
@@ -27,7 +28,8 @@ LABEL_CHOICES = (
 
 
 
-
+class CustomUser(AbstractUser):
+    profile_pic = models.URLField(blank=True, null=True)
 # Create your models here.
 class Item(models.Model):
     title = models.CharField(max_length=100)
@@ -195,3 +197,5 @@ class Review(models.Model):
     @classmethod
     def get_review_count(cls, item):
         return cls.objects.filter(item=item,parent_review__isnull=True).count()
+    
+

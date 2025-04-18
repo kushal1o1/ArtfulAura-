@@ -9,14 +9,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
-from .forms import CheckoutForm,CouponForm,RefundForm
+from .forms import CheckoutForm,CouponForm,RefundForm,ProfileUpdateForm
 from django.shortcuts import redirect
 from django.urls import reverse
 from decouple import config
 from .services import add_to_cart_service,remove_from_cart_service,remove_single_item_from_cart_service,generate_transaction_uuid,generate_signature,create_ref_code,is_valid_form,handle_esewa_payment,get_esewa_status,handle_order_complete,handle_refund_request,verify_signature
 import stripe
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+
 stripe.api_key=config("STRIPE_API_KEY")
 
 # import jsonify
@@ -579,3 +579,21 @@ def verify_stripe(request):
         return JsonResponse({"error": f"Unexpected error: {str(e)}"}, status=500)
 
 
+
+@login_required
+def profile_view(request):
+    user = request.user
+    default_address = Address.objects.filter(user=request.user).first()
+
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect("core:profile_view")
+    else:
+        form = ProfileUpdateForm(instance=user)
+
+    return render(request, 'profile.html', {
+        'profile_form': form,
+        'default_address': default_address,
+    })

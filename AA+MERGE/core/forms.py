@@ -2,6 +2,7 @@ from django import forms
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
 from .models import  Review
+from .models import CustomUser
 
 PAYMENT_CHOICES = (
     ('E', 'Esewa', 'images/esewa.png'),
@@ -79,3 +80,23 @@ class RefundForm(forms.Form):
                 'class': 'form-control',
             }))
     
+
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'profile_pic']
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-input w-full border border-gray-300 p-2 rounded',
+                'placeholder': 'First Name'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-input w-full border border-gray-300 p-2 rounded',
+                'placeholder': 'Last Name'
+            }),
+            'profile_pic': forms.URLInput(attrs={
+                'class': 'form-input w-full border border-gray-300 p-2 rounded',
+                'placeholder': 'Profile Picture URL'
+            }),
+        }
