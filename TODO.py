@@ -41,16 +41,16 @@ done= True
 done= False
 
 # TODO:Fix some UI
-done= False
+ done= False #still not done of allauth uis
 
 # TODO:Validate user input in the form
-done= False
+done= False 
 
 # TODO: Create a robust error handling mechanism to handle errors and exceptions
 done= False
 
 # TODO:Create a standard and follow that  for maintainability
-done= False
+done= True #doing it for the project
 
 # TODO:Update a readme file for the project
 done= False
@@ -59,7 +59,7 @@ done= False
 done= False
 
 # TODO:Create a Secure integration with payment gateways like Stripe etc.
-done= False
+done= True
 
 
 # TODO: Send a email for the order confirmation and payment confirmation 
@@ -68,7 +68,7 @@ done= False
 
 
 # TODO: Add new social login either mail,google or facebook
-done= False
+done= False #added gmail only
 
 #TODO:add stripe for learning other payment integrations
 done=True
