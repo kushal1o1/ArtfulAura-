@@ -39,6 +39,9 @@ done= True
 
 # TODO:Integrate a Machine Learning model to predict  feedback positive or negative
 done= False
+    # flow - create a model in google collab and export it to a file of pkl and then load the model in the django app and use it to predict the feedback
+    # Decision changed :Hosted in hugging face  and used the API to predict the review from there 
+    #create signal to predict the review and save it in the database
 
 # TODO:Fix some UI
  done= False #still not done of allauth uis

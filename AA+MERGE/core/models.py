@@ -179,6 +179,7 @@ class Review(models.Model):
     message = models.TextField()
     parent_review = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
     created_at = models.DateTimeField(auto_now_add=True)
+    sentiment = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
         return f'{self.user.username} - {self.rating} Stars'

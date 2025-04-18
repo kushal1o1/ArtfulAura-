@@ -134,6 +134,7 @@
           
           <!-- Right Side - Review List -->
           <div class="review-list-container">
+            <p class="text-muted small mt-1">Sentiment are Predicted by AI model — may not be 100% accurate.</p>
             {% if reviews %}
               {% for review in reviews %}
                 <div class="review-item">
@@ -153,6 +154,15 @@
                           <i class="{% if i < review.rating %}fas{% else %}far{% endif %} fa-star"></i>
                         {% endfor %}
                       </div>
+                    </div>
+                    <div class="sentiment-label mb-2">
+                      <span class="badge badge-pill 
+                            {% if review.sentiment == 'Positive' %} badge-success
+                            {% elif review.sentiment == 'Neutral' %}badge-secondary
+                            {% elif review.sentiment == 'Negative' %}badge-danger
+                            {% else %}badge-light{% endif %}">
+                        {{ review.sentiment|capfirst }}
+                      </span>
                     </div>
                     <div class="review-date">
                       <span>{{review.created_at}}</span>
@@ -183,8 +193,10 @@
                     </form>
                   </div>
                   
+
+                  
                   <!-- Replies -->
-                  {% if review.replies.all %}
+                {% if review.replies.all %}
                     <div class="review-replies">
                       {% for reply in review.replies.all %}
                         <div class="reply-item">
@@ -194,10 +206,20 @@
                           <div class="reply-content">
                             <span class="reply-username">@{{ reply.user.username }}</span>
                             <p>{{ reply.message }}</p>
+                            
+                            <span class="badge badge-pill 
+                            {% if reply.sentiment == 'Positive' %} badge-success
+                            {% elif reply.sentiment == 'Neutral' %}badge-secondary
+                            {% elif reply.sentiment == 'Negative' %}badge-danger
+                            {% else %}badge-light{% endif %}">
+                            {{ reply.sentiment }}
+                          </span>
                           </div>
+
                         </div>
                       {% endfor %}
-                    </div>
+                    </div> 
+                    
                   {% endif %}
                 </div>
               {% endfor %}

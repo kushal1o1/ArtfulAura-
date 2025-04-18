@@ -25,3 +25,7 @@ AA+_BACKEND/media/
 AA+MERGE/templates/test.html
 AA+MERGE/static_for_md/js/checkout.js
 AA+MERGE/static_for_md/js/complete.js
+
+
+ReviewAI/.venv
+ReviewAI/review_classifier.pkl
