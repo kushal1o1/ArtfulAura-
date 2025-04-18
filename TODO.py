@@ -44,7 +44,7 @@ done= False
     #create signal to predict the review and save it in the database
 
 # TODO:Fix some UI
- done= False #still not done of allauth uis
+done= False #still not done of allauth uis
 
 # TODO:Validate user input in the form
 done= False 
