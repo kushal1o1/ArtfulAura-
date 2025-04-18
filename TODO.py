@@ -67,7 +67,7 @@ done= True
 
 # TODO: Send a email for the order confirmation and payment confirmation 
 
-done= False
+done= True
 
 
 # TODO: Add new social login either mail,google or facebook
@@ -82,7 +82,7 @@ done=False
 
 
 # TODO: add email sending functionality for order confirmation and payment confirmation
-done=False
+done=True
 
 
 
