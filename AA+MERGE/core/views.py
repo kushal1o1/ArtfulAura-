@@ -337,6 +337,8 @@ class PaymentView(LoginRequiredMixin,View):
             return redirect("core:checkout")
 
 def init_khalti(request):
+    messages.info(request, "Khalti payment is not available yet")
+    return redirect("core:checkout")
     url = "https://a.khalti.com/api/v2/epayment/initiate/"
     return_url = request.POST.get('return_url')
     website_url = request.POST.get('return_url')
@@ -369,6 +371,8 @@ def init_khalti(request):
 
 @login_required
 def verify_khalti(request):
+    messages.info(request, "Khalti payment is not available yet")
+    return redirect("core:checkout")
     url = "https://a.khalti.com/api/v2/epayment/lookup/"
     # if request.method == 'GET':
     #     headers = {
